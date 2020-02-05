@@ -1,0 +1,10 @@
+{
+    "Keys": ["basemap_pix4d"],
+    "Provider": "basemap_pix4d",
+    "Version": 100,
+    "Experimental": false,
+    "Features": [
+        "OnlineMappingFeature",
+        "OnlineRoutingFeature"
+    ]
+}
