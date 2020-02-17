@@ -217,24 +217,27 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap& pa
 
     setTileFetcher(tileFetcher);
 
-    // Set up the tile cache
-    QString cacheDirectory;
-    if (usingMapBox && !getParameter(parameters, "cache_directory", cacheDirectory))
+    if (usingMapBox)
     {
-        cacheDirectory = QAbstractGeoTileCache::baseLocationCacheDirectory() + QLatin1String(pluginName);
-    }
+        // Set up the tile cache
+        QString cacheDirectory;
+        if (usingMapBox && !getParameter(parameters, "cache_directory", cacheDirectory))
+        {
+            cacheDirectory = QAbstractGeoTileCache::baseLocationCacheDirectory() + QLatin1String(pluginName);
+        }
 
-    auto tileCache = new GeoFileTileCache(mapTypes, scaleFactor, cacheDirectory);
-    tileCache->setCostStrategyDisk(QGeoFileTileCache::Unitary);
-    tileCache->setCostStrategyMemory(QGeoFileTileCache::ByteSize);
-    tileCache->setCostStrategyTexture(QGeoFileTileCache::ByteSize);
-    tileCache->setMaxDiskUsage(6000);
-    if (!usingMapBox)
+        auto tileCache = new GeoFileTileCache(mapTypes, scaleFactor, cacheDirectory);
+        tileCache->setCostStrategyDisk(QGeoFileTileCache::Unitary);
+        tileCache->setCostStrategyMemory(QGeoFileTileCache::ByteSize);
+        tileCache->setCostStrategyTexture(QGeoFileTileCache::ByteSize);
+        tileCache->setMaxDiskUsage(6000);
+        setTileCache(tileCache);
+    }
+    else
     {
         // Do not cache any custom user maps due to legality
         setCacheHint(QAbstractGeoTileCache::CacheArea::MemoryCache);
     }
-    setTileCache(tileCache);
 
     *error = QGeoServiceProvider::NoError;
     errorString->clear();
