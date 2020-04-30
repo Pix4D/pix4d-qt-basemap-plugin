@@ -154,7 +154,7 @@ QGeoTiledMapReply* GeoTileFetcher::getTileImage(const QGeoTileSpec& spec)
     {
         request.setUrl(
            QUrl(QStringLiteral("https://api.mapbox.com/styles/v1/cloudpix4d/")
-                + ((spec.mapId() - 1 >= m_mapIds.size()) ? QStringLiteral("ck8zz9gpq0vty1ip30bji3b5a") : m_mapIds[spec.mapId() - 1])
+                + m_mapIds[(spec.mapId() > m_mapIds.size()) ? 0 : spec.mapId() - 1]
                 + QLatin1String("/tiles/256/")
                 + QString::number(spec.zoom())
                 + QLatin1Char('/')

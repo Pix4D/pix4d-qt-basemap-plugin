@@ -74,17 +74,17 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap& pa
     QVector<QString> mapIds;
     if (usingMapBox)
     {
-        mapTypes << QGeoMapType(QGeoMapType::StreetMap,
-            QStringLiteral("ck8zz9gpq0vty1ip30bji3b5a"),
-            QStringLiteral("Street"),
+        mapTypes << QGeoMapType(QGeoMapType::HybridMap,
+            QStringLiteral("ck8zzfxb30vwp1jo04yktjtbg"),
+            QStringLiteral("Streets Satellite"),
             false,
             false,
             mapTypes.size() + 1,
             pluginName,
             cameraCaps);
-        mapTypes << QGeoMapType(QGeoMapType::HybridMap,
-            QStringLiteral("ck8zzfxb30vwp1jo04yktjtbg"),
-            QStringLiteral("Streets Satellite"),
+        mapTypes << QGeoMapType(QGeoMapType::StreetMap,
+            QStringLiteral("ck8zz9gpq0vty1ip30bji3b5a"),
+            QStringLiteral("Street"),
             false,
             false,
             mapTypes.size() + 1,
