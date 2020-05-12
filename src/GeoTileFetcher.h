@@ -23,7 +23,6 @@ private:
 private:
     QNetworkAccessManager* m_networkManager{nullptr};
     QByteArray m_userAgent;
-    QString m_format;
     QString m_replyFormat;
     QString m_accessToken;
     QVector<QString> m_mapIds;

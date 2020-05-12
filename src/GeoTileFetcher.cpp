@@ -15,17 +15,17 @@ namespace
         QString quad;
         const int x = spec.x();
         const int y = spec.y();
-        for (int i = spec.zoom(); i > 0; i--) 
+        for (int i = spec.zoom(); i > 0; i--)
         {
             int digit = 0;
             int mask = 1 << (i - 1);
-            if ((x & mask) != 0) 
+            if ((x & mask) != 0)
             {
-                digit += 1; 
+                digit += 1;
             }
-            if ((y & mask) != 0) 
+            if ((y & mask) != 0)
             {
-                digit += 2; 
+                digit += 2;
             }
             quad = quad + QString::number(digit);
         }
@@ -80,7 +80,7 @@ namespace
                 // Easting and northing in meters
                 a * lng * M_PI / 180.0,
                 a * std::log(std::tan(M_PI / 4.0 + (lat / 2.0) * M_PI / 180.0))
-            ); 
+            );
         };
 
         BboxCoordinates coords(spec);
@@ -110,7 +110,6 @@ GeoTileFetcher::GeoTileFetcher(int scaleFactor, bool enableLogging, const QStrin
       : QGeoTileFetcher(parent)
       , m_networkManager(new QNetworkAccessManager(this))
       , m_userAgent("Qt Location based application")
-      , m_format("png")
       , m_replyFormat("png")
       , m_accessToken("")
       , m_enableLogging(enableLogging)
@@ -126,19 +125,17 @@ void GeoTileFetcher::setMapIds(const QVector<QString>& mapIds)
 
 void GeoTileFetcher::setFormat(const QString& format)
 {
-    m_format = format;
-
-    if (m_format == "png" || m_format == "png32" || m_format == "png64" || m_format == "png128" || m_format == "png256")
+    if (format == "png" || format == "png32" || format == "png64" || format == "png128" || format == "png256")
     {
         m_replyFormat = "png";
     }
-    else if (m_format == "jpg70" || m_format == "jpg80" || m_format == "jpg90")
+    else if (format == "jpg70" || format == "jpg80" || format == "jpg90")
     {
         m_replyFormat = "jpg";
     }
     else if (m_enableLogging)
     {
-        qWarning() << "GeoTileFetcher: Unknown map format " << m_format;
+        qWarning() << "GeoTileFetcher: Unknown map format " << format;
     }
 }
 
@@ -156,17 +153,15 @@ QGeoTiledMapReply* GeoTileFetcher::getTileImage(const QGeoTileSpec& spec)
     if (m_customBasemapUrl.isEmpty())
     {
         request.setUrl(
-            QUrl(QStringLiteral("https://api.tiles.mapbox.com/v4/")
-                + ((spec.mapId() >= m_mapIds.size()) ? QStringLiteral("mapbox.streets") : m_mapIds[spec.mapId() - 1])
-                + QLatin1Char('/')
+           QUrl(QStringLiteral("https://api.mapbox.com/styles/v1/cloudpix4d/")
+                + m_mapIds[(spec.mapId() > m_mapIds.size()) ? 0 : spec.mapId() - 1]
+                + QLatin1String("/tiles/256/")
                 + QString::number(spec.zoom())
                 + QLatin1Char('/')
                 + QString::number(spec.x())
                 + QLatin1Char('/')
                 + QString::number(spec.y())
-                + ((m_scaleFactor > 1) ? (QLatin1Char('@') + QString::number(m_scaleFactor) + QLatin1String("x."))
-                    : QLatin1String("."))
-                + m_format
+                + ((m_scaleFactor > 1) ? (QLatin1Char('@') + QString::number(m_scaleFactor) + QLatin1Char('x')) : QString())
                 + QLatin1Char('?')
                 + QStringLiteral("access_token=")
                 + m_accessToken));
