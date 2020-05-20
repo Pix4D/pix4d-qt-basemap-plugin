@@ -20,6 +20,11 @@ public:
 private:
     QGeoTiledMapReply* getTileImage(const QGeoTileSpec& spec);
 
+public:
+    // The list of map style ids
+    static constexpr const char* PIX4D_STREET = "ck8zz9gpq0vty1ip30bji3b5a";
+    static constexpr const char* PIX4D_STREETS_SATELLITE = "ck8zzfxb30vwp1jo04yktjtbg";
+
 private:
     QNetworkAccessManager* m_networkManager{nullptr};
     QByteArray m_userAgent;

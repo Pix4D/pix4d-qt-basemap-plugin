@@ -74,22 +74,22 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap& pa
     QVector<QString> mapIds;
     if (usingMapBox)
     {
-        mapTypes << QGeoMapType(QGeoMapType::HybridMap,
-            QStringLiteral("ck8zzfxb30vwp1jo04yktjtbg"),
-            QStringLiteral("Streets Satellite"),
-            false,
-            false,
-            mapTypes.size() + 1,
-            pluginName,
-            cameraCaps);
+        mapTypes << QGeoMapType(QGeoMapType::SatelliteMapDay,
+                                GeoTileFetcher::PIX4D_STREETS_SATELLITE,
+                                QStringLiteral("Satellite"),
+                                false,
+                                false,
+                                mapTypes.size() + 1,
+                                pluginName,
+                                cameraCaps);
         mapTypes << QGeoMapType(QGeoMapType::StreetMap,
-            QStringLiteral("ck8zz9gpq0vty1ip30bji3b5a"),
-            QStringLiteral("Street"),
-            false,
-            false,
-            mapTypes.size() + 1,
-            pluginName,
-            cameraCaps);
+                                GeoTileFetcher::PIX4D_STREET,
+                                QStringLiteral("Street"),
+                                false,
+                                false,
+                                mapTypes.size() + 1,
+                                pluginName,
+                                cameraCaps);
 
         for (const auto& type : mapTypes)
         {
@@ -130,7 +130,7 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap& pa
             cacheDirectory = QAbstractGeoTileCache::baseLocationCacheDirectory() + QLatin1String(pluginName);
         }
 
-        auto tileCache = new GeoFileTileCache(mapTypes, scaleFactor, cacheDirectory);
+        auto tileCache = new GeoFileTileCache(mapTypes, scaleFactor, enableLogging, cacheDirectory);
         tileCache->setCostStrategyDisk(QGeoFileTileCache::Unitary);
         tileCache->setCostStrategyMemory(QGeoFileTileCache::ByteSize);
         tileCache->setCostStrategyTexture(QGeoFileTileCache::ByteSize);
