@@ -1,0 +1,6 @@
+[submodule "pix4d_build_tools"]
+	path = pix4d_build_tools
+	url = git@github.com:Pix4D/pix4d_build_tools.git
+[submodule "conan-profiles"]
+	path = conan-profiles
+	url = git@github.com:Pix4D/conan-profiles.git

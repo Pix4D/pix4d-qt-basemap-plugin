@@ -1,6 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
 project(QtBasemapPlugin VERSION 1.0.0 LANGUAGES CXX)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_set_find_paths()
+
+set(PIX4D_BUILDTOOLS_CMAKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pix4d_build_tools/cmake)
+set(PIX4D_BUILDTOOLS_GITHOOKS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pix4d_build_tools/git_hooks)
+
+include(${PIX4D_BUILDTOOLS_CMAKE_DIR}/detect_conan_updated.cmake REQUIRED)
+
+# Project settings
+include(${PIX4D_BUILDTOOLS_CMAKE_DIR}/globalOptions.cmake        REQUIRED)
+
+set(VERSION_STRING "1.0.0" CACHE STRING "Package version")
 set(LIB_NAME qtgeoservices_basemap_pix4d)
 set(PACKAGE_NAME QtBasemapPlugin)
 

@@ -1,0 +1,205 @@
+---
+base-job: &base-job
+  on_success:
+    put: github-status
+    inputs:
+    - repo.git
+    params:
+      state: success
+
+  on_failure:
+    put: github-status
+    inputs:
+    - repo.git
+    params:
+      state: failure
+
+pending: &pending
+  put: github-status
+  inputs:
+  - repo.git
+  params:
+    state: pending
+
+conan-params: &conan-params
+  CONAN_URL: https://conan.ci.pix4d.com
+  CONAN_LOGIN_USERNAME: ((conan_ro_username))
+  CONAN_PASSWORD: ((conan_ro_password))
+
+conan-build-params: &conan-build-params
+  CONAN_URL: https://conan.ci.pix4d.com
+  CONAN_LOGIN_USERNAME: ((conan_rw_username))
+  CONAN_PASSWORD: ((conan_rw_password))
+  CONAN_CHANNEL: ((branch))
+  CONAN_UPLOAD:
+
+s3-params: &s3-params
+  bucket: ci-pix4d-concourse-pipeline
+  region_name: eu-west-1
+  access_key_id: ((concourse_user_access_key))
+  secret_access_key: ((concourse_user_secret_key))
+
+git-settings: &git-settings
+  params:
+    disable_git_lfs: true
+
+get-build-inputs: &get-build-inputs
+  in_parallel:
+    - do:
+      - get: repo.git
+        params: {submodules: [conan-profiles, pix4d_build_tools]}
+        passed: [get-version]
+        trigger: true
+        <<: *git-settings
+      - get: version
+        passed: [get-version]
+      - *pending
+
+docker-registry-config: &docker-registry-config
+  username: pix4d
+  password: ((docker_cloud_pix4d_password))
+
+####################################################################################################
+
+resource_types:
+  - name: s3-simple
+    type: registry-image
+    source:
+      <<: *docker-registry-config
+      repository: docker.ci.pix4d.com/s3-resource-simple
+      tag: latest
+
+  - name: cogito
+    type: registry-image
+    check_every: 1h
+    source:
+      repository: pix4d/cogito
+      tag: latest
+
+
+####################################################################################################
+resources:
+- name: ubuntu-18.04.docker
+  type: registry-image
+  icon: docker
+  source:
+    <<: *docker-registry-config
+    repository: docker.ci.pix4d.com/cpp-builder-ubuntu-18.04
+    tag: 20200928101301
+
+
+###############################################################################
+# Repos
+###############################################################################
+
+- name: repo.git
+  type: git
+  icon: git
+  source:
+    uri: git@github.com:Pix4D/pix4d-qt-basemap-plugin.git
+    private_key: ((concourse_janus_ssh_key))
+    branch: ((branch))
+
+###############################################################################
+# Artifacts and finals
+###############################################################################
+
+- name: artifacts-ubuntu-18.04.s3
+  type: s3
+  icon: ubuntu
+  source:
+    regexp: artifacts/((project))/((branch))((branch-suffix-for-artifacts))/linux-(.*)-ubuntu-18\.04\.tgz
+    <<: *s3-params
+
+- name: version
+  type: semver
+  source:
+    driver: s3
+    key: _concourse/((project))/((branch))/version
+    <<: *s3-params
+
+- name: github-status
+  type: cogito
+  check_every: 1h
+  source:
+    owner: Pix4D
+    repo: pix4d-qt-basemap-plugin
+    access_token: ((concourse_janus_access_token_repo_status))
+
+jobs:
+
+- name: get-version
+  plan:
+  - get: repo.git
+    trigger: ((branch-is-master))
+    params: { disable_git_lfs: true, submodules: [pix4d_build_tools] }
+  - task: get-version
+    params:
+      BRANCH: ((branch))
+    file: repo.git/pix4d_build_tools/ci/tasks/get-version.yml
+  - put: version
+    inputs: [version]
+    params:
+      file: version/version
+
+- name: build-ubuntu18
+  <<: *base-job
+  plan:
+  - *get-build-inputs
+  - get: ubuntu-18.04.docker
+  - task: build-ubuntu-18.04
+    image: ubuntu-18.04.docker
+    file: repo.git/pix4d_build_tools/ci/tasks/build-linux.yml
+    params:
+      <<: *conan-params
+      CONAN_PROFILE: ./repo.git/conan-profiles/.conan/profiles/gcc-ubuntu-18.04
+      CONAN_LOCKFILE: ubuntu18.lock
+      PKG_NAME: pix4d-qt-basemap-plugin-ubuntu-18.04
+    output_mapping: { build-dir: build-ubuntu-18.04 }
+  - put: artifacts-ubuntu-18.04.s3
+    params: { file: build-ubuntu-18.04/pix4d-qt-basemap-plugin-ubuntu-18.04-*.tar }
+
+- name: conan-pkg-ubuntu18
+  <<: *base-job
+  plan:
+  - in_parallel:
+    - do:
+      - get: repo.git
+        passed: [ship-it]
+        trigger: true
+        <<: *git-settings
+      - get: version
+        passed: [get-version]
+      - *pending
+      - get: ubuntu-18.04.docker
+
+  - task: conan-ubuntu-18.04
+    image: ubuntu-18.04.docker
+    file: repo.git/pix4d_build_tools/ci/tasks/conan-linux.yml
+    params:
+      <<: *conan-build-params
+      CONAN_UPLOAD: true
+      CONAN_PROFILE: ./repo.git/conan-profiles/.conan/profiles/gcc-ubuntu-18.04
+      CONAN_LOCKFILE: ubuntu18.lock
+      RECIPE_NAME: pix4d-qt-basemap-plugin
+
+- name: ship-it
+  plan:
+  - get: repo.git
+    <<: *git-settings
+
+
+######### Groups #########
+
+groups:
+
+  - name: dev
+    jobs:
+      - get-version
+      - build-ubuntu18
+      - ship-it
+      - conan-pkg-ubuntu18
+
+
+
+

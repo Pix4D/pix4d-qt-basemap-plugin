@@ -1,0 +1,4 @@
+[DEFAULT]
+qt5 = qt5/[5.12.7-2]@pix4d/stable
+
+

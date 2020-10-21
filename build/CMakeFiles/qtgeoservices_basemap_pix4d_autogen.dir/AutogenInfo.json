@@ -1,0 +1,151 @@
+{
+	"BUILD_DIR" : "/home/cpansard/pix4d/pix4d-qt-basemap-plugin/build/qtgeoservices_basemap_pix4d_autogen",
+	"CMAKE_BINARY_DIR" : "/home/cpansard/pix4d/pix4d-qt-basemap-plugin/build",
+	"CMAKE_CURRENT_BINARY_DIR" : "/home/cpansard/pix4d/pix4d-qt-basemap-plugin/build",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/home/cpansard/pix4d/pix4d-qt-basemap-plugin",
+	"CMAKE_EXECUTABLE" : "/usr/local/bin/cmake",
+	"CMAKE_SOURCE_DIR" : "/home/cpansard/pix4d/pix4d-qt-basemap-plugin",
+	"DEP_FILE" : "",
+	"DEP_FILE_RULE_NAME" : "",
+	"HEADERS" : 
+	[
+		[
+			"/home/cpansard/pix4d/pix4d-qt-basemap-plugin/src/GeoFileTileCache.h",
+			"Mu",
+			"UVLADIE3JM/moc_GeoFileTileCache.cpp"
+		],
+		[
+			"/home/cpansard/pix4d/pix4d-qt-basemap-plugin/src/GeoMapReply.h",
+			"Mu",
+			"UVLADIE3JM/moc_GeoMapReply.cpp"
+		],
+		[
+			"/home/cpansard/pix4d/pix4d-qt-basemap-plugin/src/GeoServiceProviderPlugin.h",
+			"Mu",
+			"UVLADIE3JM/moc_GeoServiceProviderPlugin.cpp"
+		],
+		[
+			"/home/cpansard/pix4d/pix4d-qt-basemap-plugin/src/GeoTileFetcher.h",
+			"Mu",
+			"UVLADIE3JM/moc_GeoTileFetcher.cpp"
+		],
+		[
+			"/home/cpansard/pix4d/pix4d-qt-basemap-plugin/src/GeoTiledMappingManagerEngine.h",
+			"Mu",
+			"UVLADIE3JM/moc_GeoTiledMappingManagerEngine.cpp"
+		]
+	],
+	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
+	"INCLUDE_DIR" : "/home/cpansard/pix4d/pix4d-qt-basemap-plugin/build/qtgeoservices_basemap_pix4d_autogen/include",
+	"MOC_COMPILATION_FILE" : "/home/cpansard/pix4d/pix4d-qt-basemap-plugin/build/qtgeoservices_basemap_pix4d_autogen/mocs_compilation.cpp",
+	"MOC_DEFINITIONS" : 
+	[
+		"QT_CORE_LIB",
+		"QT_GUI_LIB",
+		"QT_LOCATION_LIB",
+		"QT_NETWORK_LIB",
+		"QT_NO_DEBUG",
+		"QT_OPENGL_LIB",
+		"QT_POSITIONINGQUICK_LIB",
+		"QT_POSITIONING_LIB",
+		"QT_QML_LIB",
+		"QT_QUICK_LIB",
+		"QT_WIDGETS_LIB",
+		"QT_XML_LIB",
+		"qtgeoservices_basemap_pix4d_EXPORTS"
+	],
+	"MOC_DEPEND_FILTERS" : 
+	[
+		[
+			"Q_PLUGIN_METADATA",
+			"[\n][ \t]*Q_PLUGIN_METADATA[ \t]*\\([^\\)]*FILE[ \t]*\"([^\"]+)\""
+		]
+	],
+	"MOC_INCLUDES" : 
+	[
+		"/home/cpansard/pix4d/pix4d-qt-basemap-plugin/src",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtLocation/5.12.7",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtLocation/5.12.7/QtLocation",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtPositioningQuick/5.12.7",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtPositioningQuick/5.12.7/QtPositioningQuick",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtPositioning/5.12.7",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtPositioning/5.12.7/QtPositioning",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtCore/5.12.7",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtCore/5.12.7/QtCore",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtQuick/5.12.7",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtQuick/5.12.7/QtQuick",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtQml/5.12.7",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtQml/5.12.7/QtQml",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtNetwork/5.12.7",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtNetwork/5.12.7/QtNetwork",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtGui/5.12.7",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtGui/5.12.7/QtGui",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtCore",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/mkspecs/linux-g++",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtGui",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtQuick",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtQml",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtNetwork",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtPositioning",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtXml",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtLocation",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtPositioningQuick",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtOpenGL",
+		"/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/include/QtWidgets",
+		"/usr/include",
+		"/usr/include/c++/7",
+		"/usr/include/x86_64-linux-gnu/c++/7",
+		"/usr/include/c++/7/backward",
+		"/usr/lib/gcc/x86_64-linux-gnu/7/include",
+		"/usr/local/include",
+		"/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed",
+		"/usr/include/x86_64-linux-gnu"
+	],
+	"MOC_MACRO_NAMES" : [ "Q_OBJECT", "Q_GADGET", "Q_NAMESPACE", "Q_NAMESPACE_EXPORT" ],
+	"MOC_OPTIONS" : [],
+	"MOC_PATH_PREFIX" : true,
+	"MOC_PREDEFS_CMD" : 
+	[
+		"/usr/bin/c++",
+		"-dM",
+		"-E",
+		"-c",
+		"/usr/local/share/cmake-3.17/Modules/CMakeCXXCompilerABI.cpp"
+	],
+	"MOC_PREDEFS_FILE" : "/home/cpansard/pix4d/pix4d-qt-basemap-plugin/build/qtgeoservices_basemap_pix4d_autogen/moc_predefs.h",
+	"MOC_RELAXED_MODE" : false,
+	"MOC_SKIP" : [],
+	"MULTI_CONFIG" : false,
+	"PARALLEL" : 6,
+	"PARSE_CACHE_FILE" : "/home/cpansard/pix4d/pix4d-qt-basemap-plugin/build/CMakeFiles/qtgeoservices_basemap_pix4d_autogen.dir/ParseCache.txt",
+	"QT_MOC_EXECUTABLE" : "/home/cpansard/.conan/dataMapper/Qt5/5.12.7-2/pix4d/stable/package/d8e241a703970a3b90b20083f204a598d6bd3f61/bin/moc",
+	"QT_UIC_EXECUTABLE" : "",
+	"QT_VERSION_MAJOR" : 5,
+	"QT_VERSION_MINOR" : 12,
+	"SETTINGS_FILE" : "/home/cpansard/pix4d/pix4d-qt-basemap-plugin/build/CMakeFiles/qtgeoservices_basemap_pix4d_autogen.dir/AutogenUsed.txt",
+	"SOURCES" : 
+	[
+		[
+			"/home/cpansard/pix4d/pix4d-qt-basemap-plugin/src/GeoFileTileCache.cpp",
+			"Mu"
+		],
+		[
+			"/home/cpansard/pix4d/pix4d-qt-basemap-plugin/src/GeoMapReply.cpp",
+			"Mu"
+		],
+		[
+			"/home/cpansard/pix4d/pix4d-qt-basemap-plugin/src/GeoServiceProviderPlugin.cpp",
+			"Mu"
+		],
+		[
+			"/home/cpansard/pix4d/pix4d-qt-basemap-plugin/src/GeoTileFetcher.cpp",
+			"Mu"
+		],
+		[
+			"/home/cpansard/pix4d/pix4d-qt-basemap-plugin/src/GeoTiledMappingManagerEngine.cpp",
+			"Mu"
+		]
+	],
+	"VERBOSITY" : 0
+}
