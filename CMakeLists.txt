@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(QtBasemapPlugin VERSION 1.0.0 LANGUAGES CXX)
 
+set(VERSION_STRING "1.0.0" CACHE STRING "Package version")
+set(LIB_NAME qtgeoservices_basemap_pix4d)
+set(PACKAGE_NAME QtBasemapPlugin)
+
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_set_find_paths()
 
@@ -11,10 +15,10 @@ include(${PIX4D_BUILDTOOLS_CMAKE_DIR}/detect_conan_updated.cmake REQUIRED)
 
 # Project settings
 include(${PIX4D_BUILDTOOLS_CMAKE_DIR}/globalOptions.cmake        REQUIRED)
+# Common cmake configuration and helpers
+include(${PIX4D_BUILDTOOLS_CMAKE_DIR}/cmakeDefinitions.cmake     REQUIRED)
+include(${PIX4D_BUILDTOOLS_CMAKE_DIR}/installOptions.cmake       REQUIRED)
 
-set(VERSION_STRING "1.0.0" CACHE STRING "Package version")
-set(LIB_NAME qtgeoservices_basemap_pix4d)
-set(PACKAGE_NAME QtBasemapPlugin)
 
 if (NOT ${BUILD_SHARED_LIBS})
     message(STATUS " ***** Build plugin as static library *****")
@@ -71,6 +75,9 @@ target_include_directories(${LIB_NAME} INTERFACE
 )
 
 target_compile_features(${LIB_NAME} PRIVATE cxx_std_14)
+
+include(${PIX4D_BUILDTOOLS_CMAKE_DIR}/componentDefinitions.cmake REQUIRED)
+include(${PIX4D_BUILDTOOLS_CMAKE_DIR}/packaging.cmake            REQUIRED)
 
 install(TARGETS ${LIB_NAME} EXPORT ${PACKAGE_NAME}Config
   LIBRARY DESTINATION plugins/geoservices

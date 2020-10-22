@@ -1,6 +1,10 @@
 from conans import CMake, ConanFile, tools
+from conans.tools import os_info
 import os
-
+import configparser
+from conans.model.version import Version
+from conans.errors import ConanInvalidConfiguration
+from os import getenv
 
 class QtBasemapPluginConan(ConanFile):
     name = 'QtBasemapPlugin'
@@ -12,11 +16,26 @@ class QtBasemapPluginConan(ConanFile):
     default_options = {'shared': True, 'lockfile': None}
     settings = 'os', 'compiler', 'build_type', 'arch'
     generators = 'cmake'
-    exports_sources = ['CMakeLists.txt', 'src/*', pix4d_build_tools/*',]
+    exports_sources = ['CMakeLists.txt', 'src/*']
     short_paths = True  # to circumvent Windows path length limit
 
     def configure(self):
         del self.settings.compiler.libcxx
+
+    def imports(self):
+        if os_info.is_windows:
+            destination_folders = "conanLibs", "bin"
+            for lib_dir in destination_folders:
+                self.copy("*.dll", dst=lib_dir, src="lib")
+                self.copy("*.dll", dst=lib_dir, src="bin")
+
+        if os_info.is_linux:
+            self.copy("*.so*", dst="conanLibs", src="lib")
+
+        if os_info.is_macos:
+            lib_dir = "Frameworks"
+            self.copy("*.dylib*", dst=lib_dir, src="lib")
+            self.copy("*.framework/*", dst=lib_dir, src="lib")
 
     def requirements(self):
         if self.options.lockfile:
