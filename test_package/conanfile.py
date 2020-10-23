@@ -6,15 +6,13 @@ class QtBasemapPluginTestConan(ConanFile):
     generators = 'cmake'
 
     def build(self):
-        cmake = CMake(self)
-        cmake.configure(source_dir=self.conanfile_directory, build_dir='./')
+        cmake = CMake(self, parallel=True)
+        cmake.configure(build_dir='./')
         cmake.build()
+        # Note: Not running from the install target to avoid packaging qt properly
 
-    def imports(self):
-        self.copy('*.dll', dst='bin', src='x64/vc15/bin')
-        self.copy('*.dylib*', dst='lib', src='lib')
-        self.copy('*.so*', dst='bin', src='lib')
+    def requirements(self):
+        self.requires('Qt5/[5.12.7-2]@pix4d/stable')
 
     def test(self):
-        os.chdir('bin')
-        self.run('.%sexample' % os.sep)
+        self.run(os.path.join('bin', 'example'))
