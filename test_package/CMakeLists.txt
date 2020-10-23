@@ -4,9 +4,13 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_STANDARD_REQUIRED ON)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+conan_set_find_paths()
 
-find_package(QtBasemapPlugin)
+find_package(Qt5 COMPONENTS
+    Core
+    Location
+    REQUIRED QUIET)
+find_package(QtBasemapPlugin REQUIRED QUIET)
 
 add_executable(example example.cpp)
 get_property(_libFileName TARGET qtgeoservices_basemap_pix4d PROPERTY IMPORTED_LOCATION_RELEASE)
@@ -24,7 +28,7 @@ else()
 endif()
 
 set(DEPLOY_TARGET ${CMAKE_BINARY_DIR})
-set(MAP_PLUGIN_DESTINATION ${DEPLOY_TARGET}/Plugins/geoservices)
+set(MAP_PLUGIN_DESTINATION ${DEPLOY_TARGET}/plugins/geoservices)
 set(MAP_PLUGIN ${_libFileName})
 
 message(STATUS "Map plugin path ${MAP_PLUGIN}")
@@ -32,9 +36,12 @@ message(STATUS "Map plugin path ${MAP_PLUGIN}")
 file(MAKE_DIRECTORY ${MAP_PLUGIN_DESTINATION})
 file(COPY ${MAP_PLUGIN} DESTINATION ${MAP_PLUGIN_DESTINATION})
 
-
+target_link_libraries(example PRIVATE
+    Qt5::Core
+    Qt5::Location
+)
 # don't link with it because this is needed only by the Qt runtime to give a full path to the folder containing it
 #target_link_libraries(example PRIVATE
 #    qtgeoservices_basemap_pix4d
 #)
-            
+
