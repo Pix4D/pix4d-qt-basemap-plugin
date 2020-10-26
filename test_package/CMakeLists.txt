@@ -1,10 +1,15 @@
-project(PackageTest CXX)
 cmake_minimum_required(VERSION 3.8)
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_STANDARD_REQUIRED ON)
+project(PackageTest CXX)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_set_find_paths()
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
 
 find_package(Qt5 COMPONENTS
     Core
@@ -13,26 +18,10 @@ find_package(Qt5 COMPONENTS
 find_package(QtBasemapPlugin REQUIRED QUIET)
 
 add_executable(example example.cpp)
-get_property(_libFileName TARGET qtgeoservices_basemap_pix4d PROPERTY IMPORTED_LOCATION_RELEASE)
-
-if(EXISTS ${_libFileName})
-    message(STATUS "Plugin generated at: ${_libFileName}")
-else()
-    message(FATAL_ERROR "Plugin not generated at: ${_libFileName}")
-endif()
-
-if (${CMAKE_INSTALL_PREFIX} STREQUAL "")
-    set(DEPLOY_TARGET ${CMAKE_BINARY_DIR})
-else()
-    set(DEPLOY_TARGET ${CMAKE_INSTALL_PREFIX})
-endif()
-
-set(DEPLOY_TARGET ${CMAKE_BINARY_DIR})
-set(MAP_PLUGIN_DESTINATION ${DEPLOY_TARGET}/plugins/geoservices)
-set(MAP_PLUGIN ${_libFileName})
-
+get_property(MAP_PLUGIN TARGET qtgeoservices_basemap_pix4d PROPERTY IMPORTED_LOCATION_RELEASE)
 message(STATUS "Map plugin path ${MAP_PLUGIN}")
 
+set(MAP_PLUGIN_DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins/geoservices)
 file(MAKE_DIRECTORY ${MAP_PLUGIN_DESTINATION})
 file(COPY ${MAP_PLUGIN} DESTINATION ${MAP_PLUGIN_DESTINATION})
 
