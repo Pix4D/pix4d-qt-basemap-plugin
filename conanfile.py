@@ -26,7 +26,7 @@ class QtBasemapPluginConan(ConanFile):
             # see https://github.com/conan-io/conan/issues/2856#issuecomment-421036768
             cmake.definitions["CONAN_LIBCXX"] = ""
 
-        cmake.configure(source_dir='..', build_dir='build', defs=cmake_args)
+        cmake.configure(source_dir='.', defs=cmake_args)
         cmake.build(target='install')
 
     def configure(self):
