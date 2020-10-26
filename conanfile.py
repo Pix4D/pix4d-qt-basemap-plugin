@@ -8,8 +8,6 @@ class QtBasemapPluginConan(ConanFile):
     license = 'LGPL3'
     url = 'http://code.qt.io/cgit/qt/qtlocation.git/tree/src/plugins/geoservices/mapbox?h=5.10'
     description = 'Qt GeoServices plugin for basemaps including MapBox'
-    options = {'shared': [True, False]}
-    default_options = 'shared=True'
     settings = 'os', 'compiler', 'build_type', 'arch'
     generators = 'cmake'
     exports_sources = ['CMakeLists.txt', 'src/*']
@@ -17,7 +15,7 @@ class QtBasemapPluginConan(ConanFile):
     def build(self):
         cmake = CMake(self, parallel=True)
         cmake_args = {
-            '-DBUILD_SHARED_LIBS=': 'ON' if self.options.shared else 'OFF'
+            'BUILD_SHARED_LIBS': True
         }
 
         if(tools.cross_building(self.settings) and
