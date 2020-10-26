@@ -14,13 +14,7 @@ endif()
 
 find_package(Qt5 COMPONENTS
     Core
-    Gui
-    OpenGL
-    Quick
-    Xml
-    Positioning
-    Location 
-    Network 
+    Location
     REQUIRED QUIET)
 
 set(SOURCES
@@ -29,7 +23,7 @@ set(SOURCES
    src/GeoTileFetcher.cpp
    src/GeoMapReply.cpp
    src/GeoFileTileCache.cpp
-   
+
    src/GeoServiceProviderPlugin.h
    src/GeoTiledMappingManagerEngine.h
    src/GeoTileFetcher.h
@@ -42,20 +36,12 @@ set_target_properties(${LIB_NAME} PROPERTIES AUTORCC ON AUTOMOC ON)
 
 target_link_libraries(${LIB_NAME} PRIVATE
     Qt5::Core
-    Qt5::Gui
-    Qt5::Quick
-    Qt5::Positioning
-    Qt5::Xml
     Qt5::Location
     Qt5::LocationPrivate
-    Qt5::Network
-    Qt5::OpenGL
 )
 
 target_include_directories(${LIB_NAME} INTERFACE
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-   PRIVATE src
-   ${Qt5Location_PRIVATE_INCLUDE_DIRS}
 )
 
 target_compile_features(${LIB_NAME} PRIVATE cxx_std_14)
