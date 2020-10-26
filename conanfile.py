@@ -29,8 +29,16 @@ class QtBasemapPluginConan(ConanFile):
         cmake.configure(source_dir='.', defs=cmake_args)
         cmake.build(target='install')
 
+    def build_requirements(self):
+        self.build_requires('Qt5/[5.12.7-2]@pix4d/stable')
+
     def configure(self):
         del self.settings.compiler.libcxx
+
+    def package_id(self):
+        # Make all options and dependencies (direct and transitive) contribute
+        # to the package id
+        self.info.requires.full_package_mode()
 
     def package_info(self):
         self.cpp_info.libs = ["qtgeoservices_basemap_pix4d"]
