@@ -4,11 +4,7 @@ import os
 
 class QtBasemapPluginConan(ConanFile):
     name = 'QtBasemapPlugin'
-<<<<<<< HEAD
     version = '1.0.1-5'
-=======
-    version = '1.1.0-1'
->>>>>>> b01f5e1 (Make custom basemap option of of the map types)
     license = 'LGPL3'
     url = 'http://code.qt.io/cgit/qt/qtlocation.git/tree/src/plugins/geoservices/mapbox?h=5.10'
     description = 'Qt GeoServices plugin for basemaps including MapBox'
