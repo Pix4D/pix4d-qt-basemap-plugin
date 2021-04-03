@@ -150,11 +150,13 @@ QGeoTiledMapReply* GeoTileFetcher::getTileImage(const QGeoTileSpec& spec)
     request.setRawHeader("User-Agent", m_userAgent);
     request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
 
-    if (m_customBasemapUrl.isEmpty())
+    const bool isCustomBasemapRequest = (spec.mapId() < m_mapIds.size()) && !m_customBasemapUrl.isEmpty() && (m_mapIds[spec.mapId()] == PIX4D_CUSTOM);
+
+    QUrl tileUrl;
+    if (!isCustomBasemapRequest)
     {
-        request.setUrl(
-           QUrl(QStringLiteral("https://api.mapbox.com/styles/v1/cloudpix4d/")
-                + ((spec.mapId() > m_mapIds.size()) ? PIX4D_STREET : m_mapIds[spec.mapId() - 1])
+        tileUrl = QUrl(QStringLiteral("https://api.mapbox.com/styles/v1/cloudpix4d/")
+                + ((spec.mapId() > m_mapIds.size()) ? PIX4D_STREET : m_mapIds[spec.mapId()])
                 + QLatin1String("/tiles/256/")
                 + QString::number(spec.zoom())
                 + QLatin1Char('/')
@@ -164,7 +166,7 @@ QGeoTiledMapReply* GeoTileFetcher::getTileImage(const QGeoTileSpec& spec)
                 + ((m_scaleFactor > 1) ? (QLatin1Char('@') + QString::number(m_scaleFactor) + QLatin1Char('x')) : QString())
                 + QLatin1Char('?')
                 + QStringLiteral("access_token=")
-                + m_accessToken));
+                + m_accessToken);
     }
     else
     {
@@ -260,8 +262,10 @@ QGeoTiledMapReply* GeoTileFetcher::getTileImage(const QGeoTileSpec& spec)
             qInfo() << "Basemap tile requested" << urlDetails;
         }
 
-        request.setUrl(QUrl(basemapUrl));
+        tileUrl = QUrl(basemapUrl);
     }
+
+    request.setUrl(tileUrl);
 
     return new GeoMapReply(m_networkManager->get(request), spec, m_replyFormat, m_enableLogging);
 }
