@@ -16,7 +16,7 @@ GeoFileTileCache::GeoFileTileCache(const QList<QGeoMapType>& mapTypes,
     m_scaleFactor = qBound(1, scaleFactor, 2);
     for (int i = 0; i < mapTypes.size(); i++)
     {
-        m_mapNameToId.insert(mapTypes[i].name(), i + 1);
+        m_mapNameToId.insert(mapTypes[i].name(), i);
     }
 }
 
@@ -32,7 +32,7 @@ QString GeoFileTileCache::tileSpecToFilename(const QGeoTileSpec& spec,
     QString filename = spec.plugin();
 
     filename += QLatin1String("-");
-    filename += m_mapTypes[spec.mapId() - 1].name();
+    filename += m_mapTypes[spec.mapId()].name();
     filename += QLatin1String("-");
     filename += QString::number(spec.zoom());
     filename += QLatin1String("-");

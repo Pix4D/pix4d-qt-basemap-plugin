@@ -21,9 +21,12 @@ private:
     QGeoTiledMapReply* getTileImage(const QGeoTileSpec& spec);
 
 public:
-    // The list of map style ids
+    // The list of map style names:
+    // The two values below are part of url allowing to fetch corresponsing mapbox tiles
     static constexpr const char* PIX4D_STREET = "ck8zz9gpq0vty1ip30bji3b5a";
     static constexpr const char* PIX4D_STREETS_SATELLITE = "ck8zzfxb30vwp1jo04yktjtbg";
+    // name for custom basemap tiles requests
+    static constexpr const char* PIX4D_CUSTOM = "custom";
 
 private:
     QNetworkAccessManager* m_networkManager{nullptr};

@@ -63,44 +63,58 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap& pa
     cameraCaps.setOverzoomEnabled(true);
     setCameraCapabilities(cameraCaps);
 
-    QString customBasemapUrl;
-    getParameter(parameters, "custom_basemap_url", customBasemapUrl);
-    const bool usingMapBox = customBasemapUrl.isEmpty();
-
     setTileSize(QSize(256, 256));
     m_noMapTiles = getParameter(parameters, "no_map_tiles");
 
     QList<QGeoMapType> mapTypes;
-    QVector<QString> mapIds;
-    if (usingMapBox)
-    {
-        mapTypes << QGeoMapType(QGeoMapType::SatelliteMapDay,
-                                GeoTileFetcher::PIX4D_STREETS_SATELLITE,
-                                QStringLiteral("Satellite"),
+    mapTypes << QGeoMapType(QGeoMapType::SatelliteMapDay,
+                            GeoTileFetcher::PIX4D_STREETS_SATELLITE,
+                            QStringLiteral("Satellite"),
+                            false,
+                            false,
+                            mapTypes.size(),
+                            pluginName,
+                            cameraCaps);
+    mapTypes << QGeoMapType(QGeoMapType::StreetMap,
+                            GeoTileFetcher::PIX4D_STREET,
+                            QStringLiteral("Street"),
+                            false,
+                            false,
+                            mapTypes.size(),
+                            pluginName,
+                            cameraCaps);
+
+    QString customBasemapUrl;
+    getParameter(parameters, "custom_basemap_url", customBasemapUrl);
+    if (!customBasemapUrl.isEmpty())
+        mapTypes << QGeoMapType(QGeoMapType::CustomMap,
+                                "custom",
+                                QStringLiteral("Custom"),
                                 false,
                                 false,
-                                mapTypes.size() + 1,
-                                pluginName,
-                                cameraCaps);
-        mapTypes << QGeoMapType(QGeoMapType::StreetMap,
-                                GeoTileFetcher::PIX4D_STREET,
-                                QStringLiteral("Street"),
-                                false,
-                                false,
-                                mapTypes.size() + 1,
+                                mapTypes.size(),
                                 pluginName,
                                 cameraCaps);
 
-        for (const auto& type : mapTypes)
+    if (enableLogging)
+    {
+        qInfo() << "Plugin supports " << mapTypes.size() <<" map types:";
+        for (const auto& t : qAsConst(mapTypes))
         {
-            mapIds.push_back(type.name());
+            qInfo() << t.description();
         }
     }
+
     setSupportedMapTypes(mapTypes);
 
     // Set up the tile fetcher
     const int scaleFactor = getParameter(parameters, "highdpi_tiles") ? 2 : 1;
     auto tileFetcher = new GeoTileFetcher(scaleFactor, enableLogging, customBasemapUrl, this);
+    QVector<QString> mapIds;
+    for (const auto& type : qAsConst(mapTypes))
+    {
+        mapIds.push_back(type.name());
+    }
     tileFetcher->setMapIds(mapIds);
 
     QString format;
@@ -121,11 +135,11 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap& pa
 
     setTileFetcher(tileFetcher);
 
-    if (usingMapBox)
+    if (customBasemapUrl.isEmpty())
     {
         // Set up the tile cache
         QString cacheDirectory;
-        if (usingMapBox && !getParameter(parameters, "cache_directory", cacheDirectory))
+        if (!getParameter(parameters, "cache_directory", cacheDirectory))
         {
             cacheDirectory = QAbstractGeoTileCache::baseLocationCacheDirectory() + QLatin1String(pluginName);
         }
@@ -157,7 +171,7 @@ QGeoMap* GeoTiledMappingManagerEngine::createMap()
     return m_noMapTiles ? new NoGeoTiledMap(this, 0) : new QGeoTiledMap(this, 0);
 }
 
-QSGNode* NoGeoTiledMap::updateSceneGraph(QSGNode*, QQuickWindow* window)
+QSGNode* NoGeoTiledMap::updateSceneGraph(QSGNode*, QQuickWindow*)
 {
     return nullptr;
 }
