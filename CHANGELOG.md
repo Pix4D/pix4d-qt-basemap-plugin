@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 
+## QtBasemapPlugin 1.1.0-2
+
+### Changed
+- used conan-package for Qt-dependency
+- minor changes in recipe build configuration
+
+
 ## QtBasemapPlugin 1.1.0-1
 
 ### Added
