@@ -12,7 +12,7 @@ class QtBasemapPluginTestConan(ConanFile):
         # Note: Not running from the install target to avoid packaging qt properly
 
     def requirements(self):
-        self.requires('Qt5/[5.12.7-2]@pix4d/stable')
+        self.requires('Qt5/[5.15.2-1]@pix4d/stable')
 
     def test(self):
         self.run(os.path.join('bin', 'example'))
