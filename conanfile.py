@@ -28,7 +28,7 @@ class QtBasemapPluginConan(ConanFile):
         cmake.build(target='install')
 
     def build_requirements(self):
-        self.build_requires('Qt5/[5.12.7-2]@pix4d/stable')
+        self.build_requires('Qt5/[>=5.15.2-1]@pix4d/stable')
 
     def configure(self):
         del self.settings.compiler.libcxx
