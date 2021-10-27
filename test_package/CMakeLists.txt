@@ -17,7 +17,9 @@ find_package(Qt5 COMPONENTS
     REQUIRED QUIET)
 find_package(QtBasemapPlugin REQUIRED QUIET)
 
-add_executable(example example.cpp)
+qt5_add_resources(IMAGES_RCC "res/mapbox.qrc")
+
+add_executable(example example.cpp ${IMAGES_RCC})
 get_property(MAP_PLUGIN TARGET qtgeoservices_basemap_pix4d PROPERTY IMPORTED_LOCATION_RELEASE)
 message(STATUS "Map plugin path ${MAP_PLUGIN}")
 

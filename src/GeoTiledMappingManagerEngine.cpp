@@ -168,10 +168,33 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap& pa
 
 QGeoMap* GeoTiledMappingManagerEngine::createMap()
 {
-    return m_noMapTiles ? new NoGeoTiledMap(this, 0) : new QGeoTiledMap(this, 0);
+    return m_noMapTiles ? new NoGeoTiledMap(this, 0) : new CustomGeoTiledMap(this, 0);
 }
 
 QSGNode* NoGeoTiledMap::updateSceneGraph(QSGNode*, QQuickWindow*)
 {
     return nullptr;
+}
+
+CustomGeoTiledMap::CustomGeoTiledMap(GeoTiledMappingManagerEngine *engine, QObject *parent) :
+    QGeoTiledMap(engine, parent) {
+    setCopyrightVisible(true);
+}
+
+QString CustomGeoTiledMap::copyrightsStyleSheet() const
+{
+    return QStringLiteral("* { vertical-align: middle; font-weight: normal }");
+}
+
+void CustomGeoTiledMap::evaluateCopyrights(const QSet<QGeoTileSpec> &visibleTiles) {
+    Q_UNUSED(visibleTiles);
+
+    QString copyrightsHtmlFinal("© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> "
+            "© <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> "
+            "<strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>");
+
+    copyrightsHtmlFinal = "<table><tr><th><img src='qrc:/mapboxgl/logo.png'/></th><th>"
+         + copyrightsHtmlFinal + "</th></tr></table>";
+
+    emit copyrightsChanged(copyrightsHtmlFinal);
 }

@@ -11,6 +11,14 @@ class NoGeoTiledMap : public QGeoTiledMap
     QSGNode* updateSceneGraph(QSGNode*, QQuickWindow* window) override;
 };
 
+class CustomGeoTiledMap: public QGeoTiledMap {
+public:
+    CustomGeoTiledMap(GeoTiledMappingManagerEngine *engine, QObject *parent);
+    virtual ~CustomGeoTiledMap() = default;
+    QString copyrightsStyleSheet() const override;
+    virtual void evaluateCopyrights(const QSet<QGeoTileSpec> &visibleTiles) override;
+};
+
 class GeoTiledMappingManagerEngine : public QGeoTiledMappingManagerEngine
 {
     Q_OBJECT
