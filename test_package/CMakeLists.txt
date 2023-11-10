@@ -11,7 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
 
-find_package(Qt5 COMPONENTS
+find_package(Qt6 COMPONENTS
     Core
     Location
     REQUIRED QUIET)
@@ -26,8 +26,8 @@ file(MAKE_DIRECTORY ${MAP_PLUGIN_DESTINATION})
 file(COPY ${MAP_PLUGIN} DESTINATION ${MAP_PLUGIN_DESTINATION})
 
 target_link_libraries(example PRIVATE
-    Qt5::Core
-    Qt5::Location
+    Qt6::Core
+    Qt6::Location
 )
 # don't link with it because this is needed only by the Qt runtime to give a full path to the folder containing it
 #target_link_libraries(example PRIVATE

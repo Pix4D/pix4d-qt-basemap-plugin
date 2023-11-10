@@ -1,12 +1,18 @@
-#include "GeoTileFetcher.h"
-#include "GeoMapReply.h"
+// Copyright (C) 2014 Canonical Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+
+#include "qgeotilefetchermapbox.h"
+#include "qgeomapreplymapbox.h"
+#include "qmapboxcommon.h"
 
 #include <QtMath>
-#include <QDebug>
 #include <QRegularExpression>
-#include <QtLocation/private/qgeotilespec_p.h>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
+#include <QtLocation/private/qgeotilefetcher_p.h>
+#include <QtLocation/private/qgeotiledmappingmanagerengine_p.h>
+#include <QtLocation/private/qgeotilespec_p.h>
+#include <QDebug>
 
 namespace
 {
@@ -106,49 +112,52 @@ namespace
     }
 }
 
-GeoTileFetcher::GeoTileFetcher(int scaleFactor, bool enableLogging, const QString& customBasemapUrl, QGeoTiledMappingManagerEngine* parent)
-      : QGeoTileFetcher(parent)
-      , m_networkManager(new QNetworkAccessManager(this))
-      , m_userAgent("Qt Location based application")
-      , m_replyFormat("png")
-      , m_accessToken("")
-      , m_enableLogging(enableLogging)
-      , m_customBasemapUrl(customBasemapUrl)
+
+QT_BEGIN_NAMESPACE
+
+QGeoTileFetcherMapbox::QGeoTileFetcherMapbox(int scaleFactor, bool enableLogging, const QString& customBasemapUrl, QGeoTiledMappingManagerEngine *parent)
+:   QGeoTileFetcher(parent), m_networkManager(new QNetworkAccessManager(this)),
+    m_userAgent(mapboxDefaultUserAgent),
+    m_format("png"),
+    m_replyFormat("png"),
+    m_accessToken(""),
+    m_enableLogging(enableLogging),
+    m_customBasemapUrl(customBasemapUrl)
 {
     m_scaleFactor = qBound(1, scaleFactor, 2);
 }
 
-void GeoTileFetcher::setMapIds(const QVector<QString>& mapIds)
+void QGeoTileFetcherMapbox::setUserAgent(const QByteArray &userAgent)
+{
+    m_userAgent = userAgent;
+}
+
+void QGeoTileFetcherMapbox::setMapIds(const QList<QString> &mapIds)
 {
     m_mapIds = mapIds;
 }
 
-void GeoTileFetcher::setFormat(const QString& format)
+void QGeoTileFetcherMapbox::setFormat(const QString &format)
 {
-    if (format == "png" || format == "png32" || format == "png64" || format == "png128" || format == "png256")
-    {
+    m_format = format;
+
+    if (m_format == "png" || m_format == "png32" || m_format == "png64" || m_format == "png128" || m_format == "png256")
         m_replyFormat = "png";
-    }
-    else if (format == "jpg70" || format == "jpg80" || format == "jpg90")
-    {
+    else if (m_format == "jpg70" || m_format == "jpg80" || m_format == "jpg90")
         m_replyFormat = "jpg";
-    }
-    else if (m_enableLogging)
-    {
-        qWarning() << "GeoTileFetcher: Unknown map format " << format;
-    }
+    else
+        qWarning() << "Unknown map format " << m_format;
 }
 
-void GeoTileFetcher::setAccessToken(const QString& accessToken)
+void QGeoTileFetcherMapbox::setAccessToken(const QString &accessToken)
 {
     m_accessToken = accessToken;
 }
 
-QGeoTiledMapReply* GeoTileFetcher::getTileImage(const QGeoTileSpec& spec)
+QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
 {
     QNetworkRequest request;
     request.setRawHeader("User-Agent", m_userAgent);
-    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
 
     const bool isCustomBasemapRequest = (spec.mapId() < m_mapIds.size()) && !m_customBasemapUrl.isEmpty() && (m_mapIds[spec.mapId()] == PIX4D_CUSTOM);
 
@@ -156,7 +165,7 @@ QGeoTiledMapReply* GeoTileFetcher::getTileImage(const QGeoTileSpec& spec)
     if (!isCustomBasemapRequest)
     {
         tileUrl = QUrl(QStringLiteral("https://api.mapbox.com/styles/v1/cloudpix4d/")
-                + ((spec.mapId() > m_mapIds.size()) ? PIX4D_STREET : m_mapIds[spec.mapId()])
+                + ((spec.mapId() >= m_mapIds.size()) ? PIX4D_STREET : m_mapIds[spec.mapId()])
                 + QLatin1String("/tiles/256/")
                 + QString::number(spec.zoom())
                 + QLatin1Char('/')
@@ -267,5 +276,7 @@ QGeoTiledMapReply* GeoTileFetcher::getTileImage(const QGeoTileSpec& spec)
 
     request.setUrl(tileUrl);
 
-    return new GeoMapReply(m_networkManager->get(request), spec, m_replyFormat, m_enableLogging);
+    return new QGeoMapReplyMapbox(m_networkManager->get(request), spec, m_replyFormat, m_enableLogging);
 }
+
+QT_END_NAMESPACE

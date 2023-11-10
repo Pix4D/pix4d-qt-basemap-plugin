@@ -1,28 +1,32 @@
-#include "GeoFileTileCache.h"
+// Copyright (C) 2016 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QDir>
+#include "qgeofiletilecachemapbox.h"
 #include <QtLocation/private/qgeotilespec_p.h>
+#include <QDir>
 
-GeoFileTileCache::GeoFileTileCache(const QList<QGeoMapType>& mapTypes,
-    int scaleFactor,
-    bool enableLogging,
-    const QString& directory,
-    QObject* parent)
-    : QGeoFileTileCache(directory, parent)
-    , m_enableLogging(enableLogging)
-    , m_hasCacheDirectory(!directory.isEmpty())
-    , m_mapTypes(mapTypes)
+QT_BEGIN_NAMESPACE
+
+QGeoFileTileCacheMapbox::QGeoFileTileCacheMapbox(const QList<QGeoMapType> &mapTypes,
+                                                 int scaleFactor, bool enableLogging, const QString &directory,
+                                                 QObject *parent)
+    :QGeoFileTileCache(directory, parent), 
+    m_enableLogging(enableLogging), 
+    m_hasCacheDirectory(!directory.isEmpty()), 
+    m_mapTypes(mapTypes)
 {
     m_scaleFactor = qBound(1, scaleFactor, 2);
-    for (int i = 0; i < mapTypes.size(); i++)
-    {
-        m_mapNameToId.insert(mapTypes[i].name(), i);
-    }
+    for (qsizetype i = 0; i < mapTypes.size(); i++)
+        m_mapNameToId.insert(mapTypes[i].name(), i + 1);
 }
 
-QString GeoFileTileCache::tileSpecToFilename(const QGeoTileSpec& spec,
-    const QString& format,
-    const QString& directory) const
+QGeoFileTileCacheMapbox::~QGeoFileTileCacheMapbox()
+{
+
+}
+
+QString QGeoFileTileCacheMapbox::tileSpecToFilename(const QGeoTileSpec &spec, const QString &format,
+                                                    const QString &directory) const
 {
     if (!m_hasCacheDirectory)
     {
@@ -55,7 +59,7 @@ QString GeoFileTileCache::tileSpecToFilename(const QGeoTileSpec& spec,
     return QDir(directory).filePath(filename);
 }
 
-QGeoTileSpec GeoFileTileCache::filenameToTileSpec(const QString& filename) const
+QGeoTileSpec QGeoFileTileCacheMapbox::filenameToTileSpec(const QString &filename) const
 {
     // @See QGeoFileTileCacheMapBox for more information for this function
     // General scheme is: plugin_name - map_type - zoom - x - y - @scale.png
@@ -156,3 +160,5 @@ QGeoTileSpec GeoFileTileCache::filenameToTileSpec(const QString& filename) const
     return QGeoTileSpec(
         fields.at(0), m_mapNameToId[fields.at(1)], numbers.at(0), numbers.at(1), numbers.at(2), numbers.at(3));
 }
+
+QT_END_NAMESPACE
