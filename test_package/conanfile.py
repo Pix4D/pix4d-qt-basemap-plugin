@@ -6,6 +6,8 @@ class QtBasemapPluginTestConan(ConanFile):
     generators = 'cmake'
 
     default_options = {
+        'Qt6:qtdeclarative': True,
+        'Qt6:qtpositioning': True,
         "Qt6:qtlocation": True
     }
 
@@ -16,8 +18,7 @@ class QtBasemapPluginTestConan(ConanFile):
         # Note: Not running from the install target to avoid packaging qt properly
 
     def requirements(self):
-        # self.requires('Qt6/[>=6.6.0-2]')
-        self.requires('Qt6/[>=6.6.0-2]@pix4d/stable')
+        self.requires('Qt6/[>=6.6.0-3]@pix4d/qt6')
 
     def test(self):
         self.run(os.path.join('bin', 'example'))

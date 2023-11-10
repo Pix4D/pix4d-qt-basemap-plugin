@@ -123,11 +123,11 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     tileFetcher->setMapIds(mapIds);
 
 
-    // QString useragent;
-    // if (getParameter(parameters, "useragent", useragent))
-    // {
-    //     tileFetcher->setUserAgent(useragent.toLatin1());
-    // }
+    QString useragent;
+    if (getParameter(parameters, "useragent", useragent))
+    {
+        tileFetcher->setUserAgent(useragent.toLatin1());
+    }
 
     QString format;
     if (getParameter(parameters, "format", format))

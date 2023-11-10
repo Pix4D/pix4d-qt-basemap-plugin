@@ -5,9 +5,7 @@ set(LIB_NAME qtgeoservices_basemap_pix4d)
 set(PACKAGE_NAME QtBasemapPlugin)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-message(WARNING "ALEXX path:${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
 conan_set_find_paths()
-message(WARNING "ALEXX CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
 if (NOT ${BUILD_SHARED_LIBS})
     message(STATUS " ***** Build plugin as static library *****")
@@ -19,6 +17,7 @@ endif()
 
 find_package(Qt6 COMPONENTS
     Core
+    Positioning
     Location
     REQUIRED QUIET)
 

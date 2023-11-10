@@ -13,6 +13,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/bin)
 
 find_package(Qt6 COMPONENTS
     Core
+    Positioning
     Location
     REQUIRED QUIET)
 find_package(QtBasemapPlugin REQUIRED QUIET)
