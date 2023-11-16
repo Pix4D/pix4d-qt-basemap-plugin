@@ -4,13 +4,19 @@ import os
 
 class QtBasemapPluginConan(ConanFile):
     name = 'QtBasemapPlugin'
-    version = '1.0.1-5'
+    version = '2.0.0-1'
     license = 'LGPL3'
-    url = 'http://code.qt.io/cgit/qt/qtlocation.git/tree/src/plugins/geoservices/mapbox?h=5.10'
+    url = 'http://code.qt.io/cgit/qt/qtlocation.git/tree/src/plugins/geoservices/mapbox?h=6.6.0'
     description = 'Qt GeoServices plugin for basemaps including MapBox'
     settings = 'os', 'compiler', 'build_type', 'arch'
     generators = 'cmake'
     exports_sources = ['CMakeLists.txt', 'src/*']
+
+    default_options = {
+        'Qt6:qtdeclarative': True,
+        'Qt6:qtpositioning': True,
+        "Qt6:qtlocation": True
+    }
 
     def build(self):
         cmake = CMake(self, parallel=True)
@@ -27,8 +33,8 @@ class QtBasemapPluginConan(ConanFile):
         cmake.configure(source_dir='.', defs=cmake_args)
         cmake.build(target='install')
 
-    def build_requirements(self):
-        self.build_requires('Qt5/[5.12.7-2]@pix4d/stable')
+    def requirements(self):
+        self.requires('Qt6/[>=6.6.0-3]@pix4d/qt6')
 
     def configure(self):
         del self.settings.compiler.libcxx

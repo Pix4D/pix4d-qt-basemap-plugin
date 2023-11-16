@@ -4,6 +4,9 @@ project(QtBasemapPlugin VERSION 1.0.0 LANGUAGES CXX)
 set(LIB_NAME qtgeoservices_basemap_pix4d)
 set(PACKAGE_NAME QtBasemapPlugin)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_set_find_paths()
+
 if (NOT ${BUILD_SHARED_LIBS})
     message(STATUS " ***** Build plugin as static library *****")
     set(DEFINES "-DQT_STATICPLUGIN -DQT_PLUGIN")
@@ -12,32 +15,52 @@ if (NOT ${BUILD_SHARED_LIBS})
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DEFINES}")
 endif()
 
-find_package(Qt5 COMPONENTS
+find_package(Qt6 COMPONENTS
     Core
+    Positioning
     Location
     REQUIRED QUIET)
 
 set(SOURCES
-   src/GeoServiceProviderPlugin.cpp
-   src/GeoTiledMappingManagerEngine.cpp
-   src/GeoTileFetcher.cpp
-   src/GeoMapReply.cpp
-   src/GeoFileTileCache.cpp
-
-   src/GeoServiceProviderPlugin.h
-   src/GeoTiledMappingManagerEngine.h
-   src/GeoTileFetcher.h
-   src/GeoMapReply.h
-   src/GeoFileTileCache.h
+   src/qgeoserviceproviderpluginmapbox.cpp 
+   src/qgeoserviceproviderpluginmapbox.h
+   src/qgeotiledmappingmanagerenginemapbox.cpp 
+   src/qgeotiledmappingmanagerenginemapbox.h
+   src/qgeotilefetchermapbox.cpp 
+   src/qgeotilefetchermapbox.h
+   src/qgeomapreplymapbox.cpp 
+   src/qgeomapreplymapbox.h
+   src/qgeofiletilecachemapbox.cpp 
+   src/qgeofiletilecachemapbox.h
+   src/qgeoroutingmanagerenginemapbox.cpp 
+   src/qgeoroutingmanagerenginemapbox.h
+   src/qgeoroutereplymapbox.cpp 
+   src/qgeoroutereplymapbox.h
+   src/qplacecategoriesreplymapbox.cpp 
+   src/qplacecategoriesreplymapbox.h
+   src/qplacemanagerenginemapbox.cpp 
+   src/qplacemanagerenginemapbox.h
+   src/qplacesearchsuggestionreplymapbox.cpp 
+   src/qplacesearchsuggestionreplymapbox.h
+   src/qplacesearchreplymapbox.cpp 
+   src/qplacesearchreplymapbox.h
+   src/qgeocodingmanagerenginemapbox.cpp 
+   src/qgeocodingmanagerenginemapbox.h
+   src/qgeocodereplymapbox.cpp 
+   src/qgeocodereplymapbox.h
+   src/qmapboxcommon.cpp 
+   src/qmapboxcommon.h
 )
 
-add_library(${LIB_NAME} ${SOURCES} )
+qt_add_plugin(${LIB_NAME} SHARED ${SOURCES} )
+
 set_target_properties(${LIB_NAME} PROPERTIES AUTORCC ON AUTOMOC ON)
 
 target_link_libraries(${LIB_NAME} PRIVATE
-    Qt5::Core
-    Qt5::Location
-    Qt5::LocationPrivate
+    Qt6::Core
+    Qt6::Location
+    Qt6::LocationPrivate
+    Qt6::PositioningPrivate
 )
 
 target_include_directories(${LIB_NAME} INTERFACE

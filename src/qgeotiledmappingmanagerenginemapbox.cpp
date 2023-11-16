@@ -1,10 +1,14 @@
-#include "GeoTiledMappingManagerEngine.h"
-#include "GeoTileFetcher.h"
-#include "GeoFileTileCache.h"
+// Copyright (C) 2014 Canonical Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+
+#include "qgeotiledmappingmanagerenginemapbox.h"
+#include "qgeotilefetchermapbox.h"
 
 #include <QtLocation/private/qgeocameracapabilities_p.h>
 #include <QtLocation/private/qgeomaptype_p.h>
 #include <QtLocation/private/qgeotiledmap_p.h>
+#include "qgeofiletilecachemapbox.h"
+typedef QGeoTiledMap Map;
 
 namespace
 {
@@ -40,17 +44,17 @@ namespace
     }
 }
 
-GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap& parameters,
-                                                           QGeoServiceProvider::Error* error,
-                                                           QString* errorString)
-      : QGeoTiledMappingManagerEngine()
+QT_BEGIN_NAMESPACE
+
+QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const QVariantMap &parameters, QGeoServiceProvider::Error *error, QString *errorString)
+:   QGeoTiledMappingManagerEngine()
 {
     const QByteArray pluginName = PLUGIN_NAME.toUtf8();
     const bool enableLogging = getParameter(parameters, "enable_logging");
 
     int maximumZoomLevel = 25;
     getParameter(parameters, "maximum_zoom_level", maximumZoomLevel);
-
+    
     QGeoCameraCapabilities cameraCaps;
     cameraCaps.setMinimumZoomLevel(0.0);
     cameraCaps.setMaximumZoomLevel(maximumZoomLevel);
@@ -63,45 +67,67 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap& pa
     cameraCaps.setOverzoomEnabled(true);
     setCameraCapabilities(cameraCaps);
 
-    QString customBasemapUrl;
-    getParameter(parameters, "custom_basemap_url", customBasemapUrl);
-    const bool usingMapBox = customBasemapUrl.isEmpty();
-
     setTileSize(QSize(256, 256));
     m_noMapTiles = getParameter(parameters, "no_map_tiles");
 
     QList<QGeoMapType> mapTypes;
-    QVector<QString> mapIds;
-    if (usingMapBox)
-    {
-        mapTypes << QGeoMapType(QGeoMapType::SatelliteMapDay,
-                                GeoTileFetcher::PIX4D_STREETS_SATELLITE,
-                                QStringLiteral("Satellite"),
+    mapTypes << QGeoMapType(QGeoMapType::SatelliteMapDay,
+                            QGeoTileFetcherMapbox::PIX4D_STREETS_SATELLITE,
+                            QStringLiteral("Satellite"),
+                            false,
+                            false,
+                            mapTypes.size(),
+                            pluginName,
+                            cameraCaps);
+    mapTypes << QGeoMapType(QGeoMapType::StreetMap,
+                            QGeoTileFetcherMapbox::PIX4D_STREET,
+                            QStringLiteral("Street"),
+                            false,
+                            false,
+                            mapTypes.size(),
+                            pluginName,
+                            cameraCaps);
+
+    QString customBasemapUrl;
+    getParameter(parameters, "custom_basemap_url", customBasemapUrl);
+    if (!customBasemapUrl.isEmpty())
+        mapTypes << QGeoMapType(QGeoMapType::CustomMap,
+                                "custom",
+                                QStringLiteral("Custom"),
                                 false,
                                 false,
-                                mapTypes.size() + 1,
-                                pluginName,
-                                cameraCaps);
-        mapTypes << QGeoMapType(QGeoMapType::StreetMap,
-                                GeoTileFetcher::PIX4D_STREET,
-                                QStringLiteral("Street"),
-                                false,
-                                false,
-                                mapTypes.size() + 1,
+                                mapTypes.size(),
                                 pluginName,
                                 cameraCaps);
 
-        for (const auto& type : mapTypes)
+
+    if (enableLogging)
+    {
+        qInfo() << "Plugin supports " << mapTypes.size() <<" map types:";
+        for (const auto& t : std::as_const(mapTypes))
         {
-            mapIds.push_back(type.name());
+            qInfo() << t.description();
         }
     }
+
     setSupportedMapTypes(mapTypes);
 
-    // Set up the tile fetcher
     const int scaleFactor = getParameter(parameters, "highdpi_tiles") ? 2 : 1;
-    auto tileFetcher = new GeoTileFetcher(scaleFactor, enableLogging, customBasemapUrl, this);
+    QGeoTileFetcherMapbox* tileFetcher = new QGeoTileFetcherMapbox(scaleFactor, enableLogging, customBasemapUrl, this);
+    
+    QVector<QString> mapIds;
+    for (const auto& type : std::as_const(mapTypes))
+    {
+        mapIds.push_back(type.name());
+    }
     tileFetcher->setMapIds(mapIds);
+
+
+    QString useragent;
+    if (getParameter(parameters, "useragent", useragent))
+    {
+        tileFetcher->setUserAgent(useragent.toLatin1());
+    }
 
     QString format;
     if (getParameter(parameters, "format", format))
@@ -121,16 +147,16 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap& pa
 
     setTileFetcher(tileFetcher);
 
-    if (usingMapBox)
+    if (customBasemapUrl.isEmpty())
     {
         // Set up the tile cache
         QString cacheDirectory;
-        if (usingMapBox && !getParameter(parameters, "cache_directory", cacheDirectory))
+        if (!getParameter(parameters, "cache_directory", cacheDirectory))
         {
             cacheDirectory = QAbstractGeoTileCache::baseLocationCacheDirectory() + QLatin1String(pluginName);
         }
 
-        auto tileCache = new GeoFileTileCache(mapTypes, scaleFactor, enableLogging, cacheDirectory);
+        auto tileCache = new QGeoFileTileCacheMapbox(mapTypes, scaleFactor, enableLogging, cacheDirectory);
         tileCache->setCostStrategyDisk(QGeoFileTileCache::Unitary);
         tileCache->setCostStrategyMemory(QGeoFileTileCache::ByteSize);
         tileCache->setCostStrategyTexture(QGeoFileTileCache::ByteSize);
@@ -152,12 +178,15 @@ GeoTiledMappingManagerEngine::GeoTiledMappingManagerEngine(const QVariantMap& pa
     }
 }
 
-QGeoMap* GeoTiledMappingManagerEngine::createMap()
+QGeoTiledMappingManagerEngineMapbox::~QGeoTiledMappingManagerEngineMapbox()
 {
-    return m_noMapTiles ? new NoGeoTiledMap(this, 0) : new QGeoTiledMap(this, 0);
 }
 
-QSGNode* NoGeoTiledMap::updateSceneGraph(QSGNode*, QQuickWindow* window)
+QGeoMap *QGeoTiledMappingManagerEngineMapbox::createMap()
 {
-    return nullptr;
+    QGeoTiledMap *map = new Map(this, 0);
+    map->setPrefetchStyle(m_prefetchStyle);
+    return map;
 }
+
+QT_END_NAMESPACE
