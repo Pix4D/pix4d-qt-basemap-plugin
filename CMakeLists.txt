@@ -19,6 +19,9 @@ find_package(Qt6 COMPONENTS
     Core
     Positioning
     Location
+    Gui
+    Quick 
+    Qml
     REQUIRED QUIET)
 
 set(SOURCES
@@ -60,7 +63,7 @@ target_link_libraries(${LIB_NAME} PRIVATE
     Qt6::Core
     Qt6::Location
     Qt6::LocationPrivate
-    Qt6::PositioningPrivate
+    # Qt6::PositioningPrivate
 )
 
 target_include_directories(${LIB_NAME} INTERFACE

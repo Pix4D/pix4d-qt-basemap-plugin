@@ -15,13 +15,18 @@ class QtBasemapPluginConan(ConanFile):
     default_options = {
         'Qt6:qtdeclarative': True,
         'Qt6:qtpositioning': True,
-        "Qt6:qtlocation": True
+        "Qt6:qtlocation": True,
+        'Qt6:qtwebengine': True,
+        'Qt6:qtwebchannel': True,
+        'Qt6:qtwebsockets': True,
+        'Qt6:with_quick': True
     }
 
     def build(self):
         cmake = CMake(self, parallel=True)
         cmake_args = {
-            'BUILD_SHARED_LIBS': True
+            'BUILD_SHARED_LIBS': True,
+            'QT_DEBUG_FIND_PACKAGE': True
         }
 
         if(tools.cross_building(self.settings) and
@@ -35,6 +40,8 @@ class QtBasemapPluginConan(ConanFile):
 
     def requirements(self):
         self.requires('Qt6/[>=6.6.0-3]@pix4d/qt6')
+        self.requires("xorg/11.7.7-0@pix4d/qt6")
+        self.requires("xkbcommon/1.6.0-0@pix4d/qt6")
 
     def configure(self):
         del self.settings.compiler.libcxx

@@ -16,6 +16,7 @@ find_package(Qt6 COMPONENTS
     Positioning
     Location
     REQUIRED QUIET)
+
 find_package(QtBasemapPlugin REQUIRED QUIET)
 
 add_executable(example example.cpp)
