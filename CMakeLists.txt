@@ -5,7 +5,7 @@ set(LIB_NAME qtgeoservices_basemap_pix4d)
 set(PACKAGE_NAME QtBasemapPlugin)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_set_find_paths()
+conan_basic_setup(TARGETS)
 
 if (NOT ${BUILD_SHARED_LIBS})
     message(STATUS " ***** Build plugin as static library *****")
@@ -20,38 +20,38 @@ find_package(Qt6 COMPONENTS
     Positioning
     Location
     Gui
-    Quick 
+    Quick
     Qml
     REQUIRED QUIET)
 
 set(SOURCES
-   src/qgeoserviceproviderpluginmapbox.cpp 
+   src/qgeoserviceproviderpluginmapbox.cpp
    src/qgeoserviceproviderpluginmapbox.h
-   src/qgeotiledmappingmanagerenginemapbox.cpp 
+   src/qgeotiledmappingmanagerenginemapbox.cpp
    src/qgeotiledmappingmanagerenginemapbox.h
-   src/qgeotilefetchermapbox.cpp 
+   src/qgeotilefetchermapbox.cpp
    src/qgeotilefetchermapbox.h
-   src/qgeomapreplymapbox.cpp 
+   src/qgeomapreplymapbox.cpp
    src/qgeomapreplymapbox.h
-   src/qgeofiletilecachemapbox.cpp 
+   src/qgeofiletilecachemapbox.cpp
    src/qgeofiletilecachemapbox.h
-   src/qgeoroutingmanagerenginemapbox.cpp 
+   src/qgeoroutingmanagerenginemapbox.cpp
    src/qgeoroutingmanagerenginemapbox.h
-   src/qgeoroutereplymapbox.cpp 
+   src/qgeoroutereplymapbox.cpp
    src/qgeoroutereplymapbox.h
-   src/qplacecategoriesreplymapbox.cpp 
+   src/qplacecategoriesreplymapbox.cpp
    src/qplacecategoriesreplymapbox.h
-   src/qplacemanagerenginemapbox.cpp 
+   src/qplacemanagerenginemapbox.cpp
    src/qplacemanagerenginemapbox.h
-   src/qplacesearchsuggestionreplymapbox.cpp 
+   src/qplacesearchsuggestionreplymapbox.cpp
    src/qplacesearchsuggestionreplymapbox.h
-   src/qplacesearchreplymapbox.cpp 
+   src/qplacesearchreplymapbox.cpp
    src/qplacesearchreplymapbox.h
-   src/qgeocodingmanagerenginemapbox.cpp 
+   src/qgeocodingmanagerenginemapbox.cpp
    src/qgeocodingmanagerenginemapbox.h
-   src/qgeocodereplymapbox.cpp 
+   src/qgeocodereplymapbox.cpp
    src/qgeocodereplymapbox.h
-   src/qmapboxcommon.cpp 
+   src/qmapboxcommon.cpp
    src/qmapboxcommon.h
 )
 

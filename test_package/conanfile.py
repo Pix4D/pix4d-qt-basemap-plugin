@@ -27,4 +27,4 @@ class QtBasemapPluginTestConan(ConanFile):
         self.requires("xkbcommon/1.6.0-0@pix4d/qt6")
 
     def test(self):
-        self.run(os.path.join('bin', 'example'))
+        self.run(os.path.join('bin', 'example'), run_environment=True)

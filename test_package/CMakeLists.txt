@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(PackageTest CXX)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_set_find_paths()
+conan_basic_setup(TARGETS)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_STANDARD_REQUIRED ON)
