@@ -1,0 +1,2 @@
+setuptools
+py7zr
