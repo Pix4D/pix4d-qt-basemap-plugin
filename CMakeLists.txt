@@ -5,7 +5,7 @@ set(LIB_NAME qtgeoservices_basemap_pix4d)
 set(PACKAGE_NAME QtBasemapPlugin)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+conan_set_find_paths()
 
 if (NOT ${BUILD_SHARED_LIBS})
     message(STATUS " ***** Build plugin as static library *****")

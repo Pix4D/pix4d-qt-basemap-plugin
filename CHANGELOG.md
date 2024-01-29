@@ -31,3 +31,8 @@ the new map type can be chosen as [activeMapType](https://doc.qt.io/qt-5/qml-qtl
 - if [plugin](https://doc.qt.io/qt-5/qml-qtlocation-plugin.html) is instantiated with custom url parameter, the switch between Satellite, Street (provided by mapbox) 
 and Custom tiles (provided via custom basemap url) can be done without plugin [reinstantiation](https://doc.qt.io/qt-5/qml-qtlocation-map.html#plugin-prop)
 
+
+## QtBasemapPlugin 2.0.0-1
+
+### Changed
+- QtBasemapPlugin is being upgraded and based on Qt 6.6.0-1 now.
