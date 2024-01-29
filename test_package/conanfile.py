@@ -18,7 +18,7 @@ class QtBasemapPluginTestConan(ConanFile):
         # Note: Not running from the install target to avoid packaging qt properly
 
     def requirements(self):
-        self.requires('Qt6/[>=6.6.1-0]@pix4d/qt6')
+        self.requires('Qt6/[>=6.6.1-0]@pix4d/stable')
 
     def test(self):
         self.run(os.path.join('bin', 'example'), run_environment=True)
