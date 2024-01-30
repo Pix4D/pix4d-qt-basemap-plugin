@@ -32,7 +32,7 @@ the new map type can be chosen as [activeMapType](https://doc.qt.io/qt-5/qml-qtl
 and Custom tiles (provided via custom basemap url) can be done without plugin [reinstantiation](https://doc.qt.io/qt-5/qml-qtlocation-map.html#plugin-prop)
 
 
-## QtBasemapPlugin 2.0.0-1
+## QtBasemapPlugin 2.0.0-3
 
 ### Changed
 - QtBasemapPlugin is being upgraded and based on Qt 6.6.0-1 now.
