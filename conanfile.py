@@ -4,7 +4,7 @@ import os
 
 class QtBasemapPluginConan(ConanFile):
     name = 'QtBasemapPlugin'
-    version = '2.0.0-5'
+    version = '2.0.0-6'
     license = 'LGPL3'
     url = 'http://code.qt.io/cgit/qt/qtlocation.git/tree/src/plugins/geoservices/mapbox?h=6.6.3'
     description = 'Qt GeoServices plugin for basemaps including MapBox'
@@ -44,8 +44,12 @@ class QtBasemapPluginConan(ConanFile):
         # to the package id
         self.info.requires.full_package_mode()
 
+    def package(self):
+        self.copy("*.h", dst="include/QtBasemapHelpers", src="QtBasemapHelpers/include/QtBasemapHelpers")
+        self.copy("*QtBasemapHelpers*.", dst="lib", keep_path=False)
+
     def package_info(self):
-        self.cpp_info.libs = ["qtgeoservices_basemap_pix4d"]
+        self.cpp_info.libs = ["qtgeoservices_basemap_pix4d", "QtBasemapHelpers"]
         self.cpp_info.includedirs = ['include']
-        self.cpp_info.libdirs += ['plugins/geoservices/']
-        self.cpp_info.builddirs += ['share/QtMapboxPlugin/cmake']
+        self.cpp_info.libdirs += ['plugins/geoservices/', 'lib']
+        self.cpp_info.builddirs += ['share/QtMapboxPlugin/cmake', 'share/QtBasemapHelpers/cmake']
