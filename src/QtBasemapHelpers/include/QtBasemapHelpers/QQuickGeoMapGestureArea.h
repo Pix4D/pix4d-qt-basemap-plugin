@@ -55,7 +55,14 @@
 class QGraphicsSceneMouseEvent;
 class QQuickGeoCoordinateAnimation;
 class QWheelEvent;
-class QGeoMapPinchEvent : public QObject
+
+#if defined(QBASEMAPHELPERS_LIBRARY)
+#  define MYSHAREDLIB_EXPORT Q_DECL_EXPORT
+#else
+#  define MYSHAREDLIB_EXPORT Q_DECL_IMPORT
+#endif
+
+class MYSHAREDLIB_EXPORT QGeoMapPinchEvent : public QObject
 {
     Q_OBJECT
 public:
@@ -138,7 +145,7 @@ private:
     int m_pointCount;
     bool m_accepted;
 };
-class QQuickGeoMapGestureArea : public QQuickItem
+class MYSHAREDLIB_EXPORT QQuickGeoMapGestureArea : public QQuickItem
 {
     Q_OBJECT
     Q_FLAGS(AcceptedGestures)

@@ -1,19 +1,21 @@
 # Note: these helper classes are not related to mapbox plugin but rather to QtLocation, it is better to 
 # create a separate public repository for them when we have many
 
-
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.17)
 project(QtBasemapHelpers VERSION 1.0.0 LANGUAGES CXX)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_set_find_paths()
 
 set(HELPERS_PACKAGE_NAME QtBasemapHelpers)
-set(CMAKE_AUTOMOC ON)
+set(CMAKE_BUILD_TYPE Release)
 
-# set(CMAKE_BUILD_TYPE Release)
-# set(CMAKE_SUPPORT_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-# set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+if (WIN32)
+    set(CMAKE_SUPPORT_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
+add_definitions(-DQBASEMAPHELPERS_LIBRARY)
 
 find_package(Qt6 COMPONENTS
     Core
@@ -49,7 +51,7 @@ install(TARGETS ${HELPERS_PACKAGE_NAME}
     EXPORT ${HELPERS_PACKAGE_NAME}Config
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin
-    # ARCHIVE DESTINATION lib
+    ARCHIVE DESTINATION lib
 )
 
 install(EXPORT ${HELPERS_PACKAGE_NAME}Config
