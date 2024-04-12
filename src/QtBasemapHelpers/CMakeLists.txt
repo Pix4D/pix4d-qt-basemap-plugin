@@ -9,15 +9,11 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_set_find_paths()
 
 set(HELPERS_PACKAGE_NAME QtBasemapHelpers)
+set(CMAKE_AUTOMOC ON)
 
-set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_SUPPORT_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
-get_cmake_property(_variableNames CACHE)
-foreach(_variableName ${_variableNames})
-    message(STATUS "ALEXX ${_variableName}=${${_variableName}}")
-endforeach()
+# set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_SUPPORT_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+# set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 find_package(Qt6 COMPONENTS
     Core
@@ -25,14 +21,15 @@ find_package(Qt6 COMPONENTS
     REQUIRED QUIET)
 
 set(BASEMAP_HELPERS_SOURCES
+    include/QtBasemapHelpers/QQuickGeoMapGestureArea.h
     src/QQuickGeoMapGestureArea.cpp
 )
 
-add_library(${HELPERS_PACKAGE_NAME} ${BASEMAP_HELPERS_SOURCES})
+qt_add_library(${HELPERS_PACKAGE_NAME} SHARED ${BASEMAP_HELPERS_SOURCES})
 
 target_compile_features(${HELPERS_PACKAGE_NAME} PRIVATE cxx_std_14)
 
-set_target_properties(${HELPERS_PACKAGE_NAME} PROPERTIES AUTOUIC ON AUTORCC ON AUTOMOC ON)
+set_target_properties(${HELPERS_PACKAGE_NAME} PROPERTIES AUTOMOC ON)
 
 target_include_directories(${HELPERS_PACKAGE_NAME}
     PUBLIC
@@ -51,8 +48,8 @@ install(DIRECTORY include/QtBasemapHelpers DESTINATION ${CMAKE_INSTALL_INCLUDEDI
 install(TARGETS ${HELPERS_PACKAGE_NAME}
     EXPORT ${HELPERS_PACKAGE_NAME}Config
     LIBRARY DESTINATION lib
-    RUNTIME DESTINATION lib
-    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    # ARCHIVE DESTINATION lib
 )
 
 install(EXPORT ${HELPERS_PACKAGE_NAME}Config

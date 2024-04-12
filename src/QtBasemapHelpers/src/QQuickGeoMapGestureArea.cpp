@@ -1792,4 +1792,4 @@ void QQuickGeoMapGestureArea::handleFlickAnimationStopped()
     }
 }
 
-#include "QtBasemapHelpers/moc_QQuickGeoMapGestureArea.cpp"
+// #include "QtBasemapHelpers/moc_QQuickGeoMapGestureArea.cpp"

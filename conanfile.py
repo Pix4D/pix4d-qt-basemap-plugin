@@ -21,7 +21,7 @@ class QtBasemapPluginConan(ConanFile):
     def build(self):
         cmake = CMake(self, parallel=True)
         cmake_args = {
-            'BUILD_SHARED_LIBS': True
+            # 'BUILD_SHARED_LIBS': True
         }
 
         if(tools.cross_building(self.settings) and
@@ -39,17 +39,17 @@ class QtBasemapPluginConan(ConanFile):
     def configure(self):
         del self.settings.compiler.libcxx
 
-    def package_id(self):
-        # Make all options and dependencies (direct and transitive) contribute
-        # to the package id
-        self.info.requires.full_package_mode()
+    # def package_id(self):
+    #     # Make all options and dependencies (direct and transitive) contribute
+    #     # to the package id
+    #     self.info.requires.full_package_mode()
 
     def package(self):
         self.copy("*.h", dst="include/QtBasemapHelpers", src="QtBasemapHelpers/include/QtBasemapHelpers")
         self.copy("*QtBasemapHelpers*.", dst="lib", keep_path=False)
 
-    def package_info(self):
-        self.cpp_info.libs = ["qtgeoservices_basemap_pix4d", "QtBasemapHelpers"]
-        self.cpp_info.includedirs = ['include']
-        self.cpp_info.libdirs += ['plugins/geoservices/', 'lib']
-        self.cpp_info.builddirs += ['share/QtMapboxPlugin/cmake', 'share/QtBasemapHelpers/cmake']
+    # def package_info(self):
+        # self.cpp_info.libs = ["QtBasemapHelpers"]
+        # self.cpp_info.includedirs = ['include']
+        # self.cpp_info.libdirs += ['lib']
+        # self.cpp_info.builddirs += ['share/QtBasemapHelpers/cmake']

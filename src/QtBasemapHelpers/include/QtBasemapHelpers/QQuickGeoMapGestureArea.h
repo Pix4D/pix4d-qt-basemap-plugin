@@ -55,7 +55,6 @@
 class QGraphicsSceneMouseEvent;
 class QQuickGeoCoordinateAnimation;
 class QWheelEvent;
-class QGeoMap;
 class QGeoMapPinchEvent : public QObject
 {
     Q_OBJECT
