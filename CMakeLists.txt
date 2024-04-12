@@ -1,6 +1,6 @@
 add_subdirectory(src/QtBasemapHelpers)
 
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.21)
 project(QtBasemapPlugin VERSION 2.0.6 LANGUAGES CXX)
 
 set(LIB_NAME qtgeoservices_basemap_pix4d)

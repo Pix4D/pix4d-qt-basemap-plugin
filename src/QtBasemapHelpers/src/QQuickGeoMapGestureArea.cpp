@@ -33,7 +33,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "QQuickGeoMapGestureArea.h"
+#include "QtBasemapHelpers/QQuickGeoMapGestureArea.h"
 #include <QtGui/QGuiApplication>
 #include <QtGui/qevent.h>
 #include <QtLocation/private/error_messages_p.h>
@@ -1791,3 +1791,5 @@ void QQuickGeoMapGestureArea::handleFlickAnimationStopped()
         m_map->prefetchData();
     }
 }
+
+#include "QtBasemapHelpers/moc_QQuickGeoMapGestureArea.cpp"
