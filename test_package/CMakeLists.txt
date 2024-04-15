@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.17)
 project(PackageTest CXX)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -17,9 +17,14 @@ find_package(Qt6 COMPONENTS
     Location
     REQUIRED QUIET)
 
+find_package(QtBasemapHelpers REQUIRED SHARED)
 find_package(QtBasemapPlugin REQUIRED QUIET)
 
-add_executable(example example.cpp)
+
+qt_add_executable(example example.cpp)
+
+set_target_properties(example PROPERTIES AUTORCC ON AUTOMOC ON)
+
 get_property(MAP_PLUGIN TARGET qtgeoservices_basemap_pix4d PROPERTY IMPORTED_LOCATION_RELEASE)
 message(STATUS "Map plugin path ${MAP_PLUGIN}")
 
@@ -30,9 +35,6 @@ file(COPY ${MAP_PLUGIN} DESTINATION ${MAP_PLUGIN_DESTINATION})
 target_link_libraries(example PRIVATE
     Qt6::Core
     Qt6::Location
+    Qt6::LocationPrivate
+    QtBasemapHelpers
 )
-# don't link with it because this is needed only by the Qt runtime to give a full path to the folder containing it
-#target_link_libraries(example PRIVATE
-#    qtgeoservices_basemap_pix4d
-#)
-

@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.12)
-project(QtBasemapPlugin VERSION 1.0.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.17)
+project(QtBasemapPlugin VERSION 2.0.6 LANGUAGES CXX)
 
 set(LIB_NAME qtgeoservices_basemap_pix4d)
 set(PACKAGE_NAME QtBasemapPlugin)
@@ -71,7 +71,8 @@ target_compile_features(${LIB_NAME} PRIVATE cxx_std_14)
 install(TARGETS ${LIB_NAME} EXPORT ${PACKAGE_NAME}Config
   LIBRARY DESTINATION plugins/geoservices
   RUNTIME DESTINATION plugins/geoservices
-  ARCHIVE DESTINATION lib
 )
 
 install(EXPORT ${PACKAGE_NAME}Config DESTINATION share/${PACKAGE_NAME}/cmake)
+
+add_subdirectory(src/QtBasemapHelpers)

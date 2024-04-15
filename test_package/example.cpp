@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <QtBasemapHelpers/QQuickGeoMapGestureArea.h>
+
 int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
@@ -22,5 +24,12 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "Plugin available" << std::endl;
+
+    std::unique_ptr<QQuickGeoMapGestureArea> ptr(new QQuickGeoMapGestureArea(nullptr));
+    QObject::connect(ptr.get(), &QQuickGeoMapGestureArea::panActiveChanged, []() { 
+        std::cout << "Connetion is working";
+    });
+
+
     return EXIT_SUCCESS;
 }
