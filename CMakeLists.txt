@@ -75,4 +75,4 @@ install(TARGETS ${LIB_NAME} EXPORT ${PACKAGE_NAME}Config
 
 install(EXPORT ${PACKAGE_NAME}Config DESTINATION share/${PACKAGE_NAME}/cmake)
 
-add_subdirectory(src/QtBasemapHelpers)
+add_subdirectory(src/BasemapHelpers)

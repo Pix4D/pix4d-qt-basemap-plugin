@@ -17,7 +17,7 @@ find_package(Qt6 COMPONENTS
     Location
     REQUIRED QUIET)
 
-find_package(QtBasemapHelpers REQUIRED SHARED)
+find_package(BasemapHelpers REQUIRED SHARED)
 find_package(QtBasemapPlugin REQUIRED QUIET)
 
 
@@ -36,5 +36,5 @@ target_link_libraries(example PRIVATE
     Qt6::Core
     Qt6::Location
     Qt6::LocationPrivate
-    QtBasemapHelpers
+    BasemapHelpers
 )

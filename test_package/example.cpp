@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include <QtBasemapHelpers/QQuickGeoMapGestureArea.h>
+#include <BasemapHelpers/QQuickGeoMapGestureArea.h>
 
 int main(int argc, char* argv[])
 {

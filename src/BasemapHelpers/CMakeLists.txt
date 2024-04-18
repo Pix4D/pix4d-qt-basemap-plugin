@@ -2,12 +2,12 @@
 # create a separate public repository for them when we have many
 
 cmake_minimum_required(VERSION 3.17)
-project(QtBasemapHelpers VERSION 1.0.0 LANGUAGES CXX)
+project(BasemapHelpers VERSION 1.0.0 LANGUAGES CXX)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_set_find_paths()
 
-set(HELPERS_PACKAGE_NAME QtBasemapHelpers)
+set(HELPERS_PACKAGE_NAME BasemapHelpers)
 set(CMAKE_BUILD_TYPE Release)
 
 if (WIN32)
@@ -23,7 +23,7 @@ find_package(Qt6 COMPONENTS
     REQUIRED QUIET)
 
 set(BASEMAP_HELPERS_SOURCES
-    include/QtBasemapHelpers/QQuickGeoMapGestureArea.h
+    include/BasemapHelpers/QQuickGeoMapGestureArea.h
     src/QQuickGeoMapGestureArea.cpp
 )
 
@@ -45,7 +45,7 @@ target_link_libraries(${HELPERS_PACKAGE_NAME} PUBLIC
     Qt6::LocationPrivate
 )
 
-install(DIRECTORY include/QtBasemapHelpers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY include/BasemapHelpers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(TARGETS ${HELPERS_PACKAGE_NAME}
     EXPORT ${HELPERS_PACKAGE_NAME}Config

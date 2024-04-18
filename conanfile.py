@@ -4,7 +4,7 @@ import os
 
 class QtBasemapPluginConan(ConanFile):
     name = 'QtBasemapPlugin'
-    version = '2.0.0-6'
+    version = '2.0.0-7'
     license = 'LGPL3'
     url = 'http://code.qt.io/cgit/qt/qtlocation.git/tree/src/plugins/geoservices/mapbox?h=6.6.3'
     description = 'Qt GeoServices plugin for basemaps including MapBox'
@@ -45,8 +45,8 @@ class QtBasemapPluginConan(ConanFile):
         self.info.requires.full_package_mode()
 
     def package(self):
-        self.copy("*.h", dst="include/QtBasemapHelpers", src="QtBasemapHelpers/include/QtBasemapHelpers")
-        self.copy("*QtBasemapHelpers*.", dst="lib", keep_path=False)
+        self.copy("*.h", dst="include/BasemapHelpers", src="BasemapHelpers/include/BasemapHelpers")
+        self.copy("*BasemapHelpers*.", dst="lib", keep_path=False)
 
     def package_info(self):
         self.cpp_info.libs = ["qtgeoservices_basemap_pix4d"]
