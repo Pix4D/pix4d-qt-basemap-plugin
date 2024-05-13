@@ -4,7 +4,7 @@ import os
 
 class QtBasemapPluginConan(ConanFile):
     name = 'QtBasemapPlugin'
-    version = '2.0.0-7'
+    version = '2.0.0-8'
     license = 'LGPL3'
     url = 'http://code.qt.io/cgit/qt/qtlocation.git/tree/src/plugins/geoservices/mapbox?h=6.6.3'
     description = 'Qt GeoServices plugin for basemaps including MapBox'

@@ -17,7 +17,7 @@ QGeoFileTileCacheMapbox::QGeoFileTileCacheMapbox(const QList<QGeoMapType> &mapTy
 {
     m_scaleFactor = qBound(1, scaleFactor, 2);
     for (qsizetype i = 0; i < mapTypes.size(); i++)
-        m_mapNameToId.insert(mapTypes[i].name(), i + 1);
+        m_mapNameToId.insert(mapTypes[i].name(), i);
 }
 
 QGeoFileTileCacheMapbox::~QGeoFileTileCacheMapbox()
