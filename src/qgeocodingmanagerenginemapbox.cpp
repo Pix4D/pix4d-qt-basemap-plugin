@@ -30,14 +30,14 @@ QGeoCodingManagerEngineMapbox::QGeoCodingManagerEngineMapbox(const QVariantMap &
                                                        QString *errorString)
 :   QGeoCodingManagerEngine(parameters), m_networkManager(new QNetworkAccessManager(this))
 {
-    if (parameters.contains(QStringLiteral("mapbox.useragent")))
-        m_userAgent = parameters.value(QStringLiteral("mapbox.useragent")).toString().toLatin1();
+    if (parameters.contains(QStringLiteral("useragent")))
+        m_userAgent = parameters.value(QStringLiteral("useragent")).toString().toLatin1();
     else
         m_userAgent = QByteArrayLiteral("Qt Location based application");
 
-    m_accessToken = parameters.value(QStringLiteral("mapbox.access_token")).toString();
+    m_accessToken = parameters.value(QStringLiteral("access_token")).toString();
 
-    m_isEnterprise = parameters.value(QStringLiteral("mapbox.enterprise")).toBool();
+    m_isEnterprise = parameters.value(QStringLiteral("enterprise")).toBool();
     m_urlPrefix = m_isEnterprise ? mapboxGeocodingEnterpriseApiPath : mapboxGeocodingApiPath;
 
     *error = QGeoServiceProvider::NoError;

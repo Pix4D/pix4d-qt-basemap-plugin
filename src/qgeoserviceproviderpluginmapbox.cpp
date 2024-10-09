@@ -20,11 +20,7 @@ static inline QString msgAccessTokenParameter()
 QGeoCodingManagerEngine *QGeoServiceProviderFactoryMapbox::createGeocodingManagerEngine(
     const QVariantMap &parameters, QGeoServiceProvider::Error *error, QString *errorString) const
 {
-    Q_UNUSED(parameters)
-    Q_UNUSED(error)
-    Q_UNUSED(errorString)
-
-    return nullptr;
+    return new QGeoCodingManagerEngineMapbox(parameters, error, errorString);
 }
 
 QGeoMappingManagerEngine *QGeoServiceProviderFactoryMapbox::createMappingManagerEngine(
