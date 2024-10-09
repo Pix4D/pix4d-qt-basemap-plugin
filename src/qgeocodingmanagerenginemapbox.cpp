@@ -18,11 +18,28 @@
 #include <QtPositioning/QGeoShape>
 #include <QtPositioning/QGeoCircle>
 #include <QtPositioning/QGeoRectangle>
+#include <QtLocation/QGeoCodeReply>
+#include <QtLocation/QGeoServiceProvider>
 
 QT_BEGIN_NAMESPACE
 
 namespace {
-    static const QString allAddressTypes = QStringLiteral("address,district,locality,neighborhood,place,postcode,region,country");
+    static const QString geocodingApiV6Url = QStringLiteral("https://api.mapbox.com/search/geocode/v6/")
+    static const QString searchTypeForward = QStringLiteral("forward?");
+    static const QString searchTypeReverse = QStringLiteral("reverse?");
+    static const QStringList allAddressType = {
+            QStringLiteral("secondary_address"), // Currently available in the US only
+            QStringLiteral("address"),
+            QStringLiteral("block"), // Special feature type reserved for Japanese addresses
+            QStringLiteral("street"),
+            QStringLiteral("neighborhood"),
+            QStringLiteral("locality"),
+            QStringLiteral("place"),
+            QStringLiteral("district"),
+            QStringLiteral("postcode"),
+            QStringLiteral("region"),
+            QStringLiteral("country"),
+        };
 }
 
 QGeoCodingManagerEngineMapbox::QGeoCodingManagerEngineMapbox(const QVariantMap &parameters,
@@ -30,15 +47,13 @@ QGeoCodingManagerEngineMapbox::QGeoCodingManagerEngineMapbox(const QVariantMap &
                                                        QString *errorString)
 :   QGeoCodingManagerEngine(parameters), m_networkManager(new QNetworkAccessManager(this))
 {
-    if (parameters.contains(QStringLiteral("mapbox.useragent")))
-        m_userAgent = parameters.value(QStringLiteral("mapbox.useragent")).toString().toLatin1();
-    else
-        m_userAgent = QByteArrayLiteral("Qt Location based application");
+    if (parameters.contains(QStringLiteral("useragent")))
+            m_userAgent = parameters.value(QStringLiteral("useragent")).toString().toLatin1();
+        else
+            m_userAgent = mapboxDefaultUserAgent;
 
-    m_accessToken = parameters.value(QStringLiteral("mapbox.access_token")).toString();
-
-    m_isEnterprise = parameters.value(QStringLiteral("mapbox.enterprise")).toBool();
-    m_urlPrefix = m_isEnterprise ? mapboxGeocodingEnterpriseApiPath : mapboxGeocodingApiPath;
+    m_accessToken = parameters.value(QStringLiteral("access_token")).toString();
+    m_urlPrefix = geocodingApiV6Url;
 
     *error = QGeoServiceProvider::NoError;
     errorString->clear();
@@ -48,13 +63,14 @@ QGeoCodingManagerEngineMapbox::~QGeoCodingManagerEngineMapbox()
 {
 }
 
-QGeoCodeReply *QGeoCodingManagerEngineMapbox::geocode(const QGeoAddress &address, const QGeoShape &bounds)
+// TODO: Fix!!!! XP
+QGeoCodeReply* QGeoCodingManagerEngineMapbox::geocode(const QGeoAddress &address, const QGeoShape &bounds)
 {
     QUrlQuery queryItems;
 
     // If address text() is not generated: a manual setText() has been made.
     if (!address.isTextGenerated()) {
-        queryItems.addQueryItem(QStringLiteral("type"), allAddressTypes);
+        queryItems.addQueryItem(QStringLiteral("type"), allAddressType.join(QStringLiteral(",")));
         return doSearch(address.text().simplified(), queryItems, bounds);
     }
 
@@ -93,40 +109,48 @@ QGeoCodeReply *QGeoCodingManagerEngineMapbox::geocode(const QGeoAddress &address
         typeString.append(QStringLiteral("country"));
     }
 
+    queryItems.addQueryItem(QStringLiteral("q"), addressString.join(QLatin1Char(',')));
     queryItems.addQueryItem(QStringLiteral("type"), typeString.join(QLatin1Char(',')));
     queryItems.addQueryItem(QStringLiteral("limit"), QString::number(1));
 
-    return doSearch(addressString.join(QStringLiteral(", ")), queryItems, bounds);
+    return search(SearchType::FORWARD, queryItems, bounds);
 }
 
-QGeoCodeReply *QGeoCodingManagerEngineMapbox::geocode(const QString &address, int limit, int offset, const QGeoShape &bounds)
+QGeoCodeReply* QGeoCodingManagerEngineMapbox::geocode(const QString &address, int limit, int offset, const QGeoShape &bounds)
 {
     Q_UNUSED(offset);
 
-    QUrlQuery queryItems;
-    queryItems.addQueryItem(QStringLiteral("type"), allAddressTypes);
-    queryItems.addQueryItem(QStringLiteral("limit"), QString::number(limit));
+    const QByteArray encodedAddress = QUrl::toPercentEncoding(address);
 
-    return doSearch(address, queryItems, bounds);
+    QUrlQuery queryItems;
+    queryItems.addQueryItem(QStringLiteral("q"), QString::fromUtf8(encodedAddress));
+    queryItems.addQueryItem(QStringLiteral("limit"), QString::number(limit));
+    
+    return search(SearchType::FORWARD, queryItems, bounds);
 }
 
-QGeoCodeReply *QGeoCodingManagerEngineMapbox::reverseGeocode(const QGeoCoordinate &coordinate, const QGeoShape &bounds)
+// TODO: Fix!!!! XP
+QGeoCodeReply* QGeoCodingManagerEngineMapbox::reverseGeocode(const QGeoCoordinate &coordinate, const QGeoShape &bounds)
 {
     const QString coordinateString = QString::number(coordinate.longitude()) + QLatin1Char(',') + QString::number(coordinate.latitude());
 
     QUrlQuery queryItems;
+    queryItems.addQueryItem(QStringLiteral("q"), coordinateString);
     queryItems.addQueryItem(QStringLiteral("limit"), QString::number(1));
 
-    return doSearch(coordinateString, queryItems, bounds);
+    return search(SearchType::REVERSE, queryItems, bounds);
 }
 
-QGeoCodeReply *QGeoCodingManagerEngineMapbox::doSearch(const QString &request, QUrlQuery &queryItems, const QGeoShape &bounds)
+QGeoCodeReply *QGeoCodingManagerEngineMapbox::search(const SearchType searchType, QUrlQuery& urlQuery, const QGeoShape& bounds)
 {
+    const QString searchType = searchType == SearchType::FORWARD ? searchTypeForward : searchTypeReverse;
+    QUrl requestUrl(m_urlPrefix + searchType);
+    
     queryItems.addQueryItem(QStringLiteral("access_token"), m_accessToken);
-
-    const QString &languageCode = QLocale::system().name().section(QLatin1Char('_'), 0, 0);
+    const QString languageCode = QLocale::languageToCode(geoCodingManager->locale().language());
     queryItems.addQueryItem(QStringLiteral("language"), languageCode);
 
+    // TODO: need to check it...
     QGeoRectangle boundingBox = bounds.boundingGeoRectangle();
     if (!boundingBox.isEmpty()) {
         queryItems.addQueryItem(QStringLiteral("bbox"),
@@ -136,35 +160,13 @@ QGeoCodeReply *QGeoCodingManagerEngineMapbox::doSearch(const QString &request, Q
                 QString::number(boundingBox.topLeft().latitude()));
     }
 
-    QUrl requestUrl(m_urlPrefix + request + QStringLiteral(".json"));
     requestUrl.setQuery(queryItems);
 
-    QNetworkRequest networkRequest(requestUrl);
-    networkRequest.setHeader(QNetworkRequest::UserAgentHeader, m_userAgent);
+    QNetworkRequest networkRequest;
+    networkRequest.setRawHeader("User-Agent", m_userAgent);
+    networkRequest.setUrl(requestUrl);
 
-    QNetworkReply *networkReply = m_networkManager->get(networkRequest);
-    QGeoCodeReplyMapbox *reply = new QGeoCodeReplyMapbox(networkReply, this);
-
-    connect(reply, &QGeoCodeReplyMapbox::finished,
-            this, &QGeoCodingManagerEngineMapbox::onReplyFinished);
-    connect(reply, &QGeoCodeReply::errorOccurred,
-            this, &QGeoCodingManagerEngineMapbox::onReplyError);
-
-    return reply;
-}
-
-void QGeoCodingManagerEngineMapbox::onReplyFinished()
-{
-    QGeoCodeReply *reply = qobject_cast<QGeoCodeReply *>(sender());
-    if (reply)
-        emit finished(reply);
-}
-
-void QGeoCodingManagerEngineMapbox::onReplyError(QGeoCodeReply::Error errorCode, const QString &errorString)
-{
-    QGeoCodeReply *reply = qobject_cast<QGeoCodeReply *>(sender());
-    if (reply)
-        emit errorOccurred(reply, errorCode, errorString);
+    return new QGeoCodeReplyMapbox(m_networkManager->get(networkRequest), this);
 }
 
 QT_END_NAMESPACE

@@ -16,10 +16,15 @@ class QGeoCodeReplyMapbox : public QGeoCodeReply
 public:
     explicit QGeoCodeReplyMapbox(QNetworkReply *reply, QObject *parent = nullptr);
     ~QGeoCodeReplyMapbox();
+    
+    QNetworkReply* networkReply();
 
 private Q_SLOTS:
-    void onNetworkReplyFinished();
-    void onNetworkReplyError(QNetworkReply::NetworkError error);
+    void networkReplyFinished();
+    void networkReplyError(QNetworkReply::NetworkError error);
+    
+private:
+    QNetworkReply* m_networkReply{nullptr};
 };
 
 QT_END_NAMESPACE
