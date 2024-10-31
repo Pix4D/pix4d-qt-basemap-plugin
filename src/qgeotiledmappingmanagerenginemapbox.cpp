@@ -72,7 +72,7 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
 
     QList<QGeoMapType> mapTypes;
     mapTypes << QGeoMapType(QGeoMapType::SatelliteMapDay,
-                            QGeoTileFetcherMapbox::PIX4D_STREETS_SATELLITE,
+                            QGeoTileFetcherMapbox::PIX4D_SATELLITE,
                             QStringLiteral("Satellite"),
                             false,
                             false,
@@ -80,8 +80,8 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
                             pluginName,
                             cameraCaps);
     mapTypes << QGeoMapType(QGeoMapType::StreetMap,
-                            QGeoTileFetcherMapbox::PIX4D_STREET,
-                            QStringLiteral("Street"),
+                            QGeoTileFetcherMapbox::PIX4D_STREETS,
+                            QStringLiteral("Streets"),
                             false,
                             false,
                             mapTypes.size(),
@@ -92,7 +92,7 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     getParameter(parameters, "custom_basemap_url", customBasemapUrl);
     if (!customBasemapUrl.isEmpty())
         mapTypes << QGeoMapType(QGeoMapType::CustomMap,
-                                "custom",
+                                QGeoTileFetcherMapbox::PIX4D_CUSTOM,
                                 QStringLiteral("Custom"),
                                 false,
                                 false,
@@ -134,15 +134,25 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     {
         tileFetcher->setFormat(format);
     }
-
-    QString accessToken;
-    if (getParameter(parameters, "access_token", accessToken))
+    
+    QString satelliteUrl;
+    if (getParameter(parameters, "satellite_url", satelliteUrl))
     {
-        tileFetcher->setAccessToken(accessToken);
+        tileFetcher->setSatelliteUrl(satelliteUrl);
     }
     else
     {
-        qCritical() << "Basemap Plugin no access token was set";
+        qCritical() << "Basemap Plugin no satellite URL was set";
+    }
+    
+    QString streetsUtl;
+    if (getParameter(parameters, "streets_url", streetsUtl))
+    {
+        tileFetcher->setStreetsUrl(streetsUtl);
+    }
+    else
+    {
+        qCritical() << "Basemap Plugin no streets URL was set";
     }
 
     setTileFetcher(tileFetcher);
