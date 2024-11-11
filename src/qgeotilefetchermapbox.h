@@ -28,8 +28,6 @@ public:
     void setUserAgent(const QByteArray &userAgent);
     void setMapIds(const QList<QString> &mapIds);
     void setFormat(const QString &format);
-    void setSatelliteUrl(const QString &satelliteUrl);
-    void setStreetsUrl(const QString &streetsUrl);
 
 private:
     QGeoTiledMapReply *getTileImage(const QGeoTileSpec &spec) override;
@@ -38,8 +36,6 @@ private:
     QByteArray m_userAgent;
     QString m_format;
     QString m_replyFormat;
-    QString m_satelliteUrl;
-    QString m_streetsUrl;
     QList<QString> m_mapIds;
     int m_scaleFactor;
     bool m_enableLogging{false};

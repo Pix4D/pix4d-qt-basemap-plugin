@@ -134,26 +134,6 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     {
         tileFetcher->setFormat(format);
     }
-    
-    QString satelliteUrl;
-    if (getParameter(parameters, "satellite_url", satelliteUrl))
-    {
-        tileFetcher->setSatelliteUrl(satelliteUrl);
-    }
-    else
-    {
-        qCritical() << "Basemap Plugin no satellite URL was set";
-    }
-    
-    QString streetsUtl;
-    if (getParameter(parameters, "streets_url", streetsUtl))
-    {
-        tileFetcher->setStreetsUrl(streetsUtl);
-    }
-    else
-    {
-        qCritical() << "Basemap Plugin no streets URL was set";
-    }
 
     setTileFetcher(tileFetcher);
 
