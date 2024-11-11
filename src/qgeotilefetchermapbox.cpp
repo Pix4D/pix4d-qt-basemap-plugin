@@ -148,16 +148,6 @@ void QGeoTileFetcherMapbox::setFormat(const QString &format)
         qWarning() << "Unknown map format " << m_format;
 }
 
-void QGeoTileFetcherMapbox::setSatelliteUrl(const QString &satelliteUrl)
-{
-    m_satelliteUrl = satelliteUrl;
-}
-
-void QGeoTileFetcherMapbox::setStreetsUrl(const QString &streetsUrl)
-{
-    m_streetsUrl = streetsUrl;
-}
-
 QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
 {
     QNetworkRequest request;
@@ -171,12 +161,14 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
     QStringList subdomains;
     
     QString basemapUrl;
-    if ((spec.mapId() < m_mapIds.size()) && !m_customBasemapUrl.isEmpty() && (m_mapIds[spec.mapId()] == PIX4D_CUSTOM))
+    const bool isCustomBasemapRequest = (spec.mapId() < m_mapIds.size()) && !m_customBasemapUrl.isEmpty() && (m_mapIds[spec.mapId()] == PIX4D_CUSTOM);
+    if (isCustomBasemapRequest)
         basemapUrl = m_customBasemapUrl;
     else if (m_mapIds[spec.mapId()] == PIX4D_STREETS)
-        basemapUrl = m_streetsUrl;
-    else if (m_mapIds[spec.mapId()] == PIX4D_SATELLITE)
-        basemapUrl = m_satelliteUrl;
+        basemapUrl = MAPTILER_STREETS_URL;
+    else // if (m_mapIds[spec.mapId()] == PIX4D_SATELLITE)
+        basemapUrl = MAPTILER_SATELLITE_URL;
+
     basemapUrl = basemapUrl.replace("{x}", x);
     basemapUrl = basemapUrl.replace("{y}", y);
     basemapUrl = basemapUrl.replace("{z}", z);
