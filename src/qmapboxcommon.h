@@ -26,6 +26,16 @@ static const QByteArray mapboxDefaultUserAgent = QByteArrayLiteral("Qt Location 
 
 static const qreal mapboxDefaultRadius = 50000;
 
+const QStringList NON_QUERY_PARAMETER_KEYS{QStringLiteral("enable_logging"),
+    QStringLiteral("maximum_zoom_level"),
+    QStringLiteral("no_map_tiles"),
+    QStringLiteral("custom_basemap_url"),
+    QStringLiteral("highdpi_tiles"),
+    QStringLiteral("useragent"),
+    QStringLiteral("format"),
+    QStringLiteral("cache_directory"),
+};
+
 class QMapboxCommon
 {
 public:

@@ -148,6 +148,18 @@ void QGeoTileFetcherMapbox::setFormat(const QString &format)
         qWarning() << "Unknown map format " << m_format;
 }
 
+void QGeoTileFetcherMapbox::setAdditionalParameters(const QVariantMap& parameters)
+{
+    std::for_each(parameters.keyBegin(), parameters.keyEnd(), [this, parameters](const auto& inputKey){
+        if (std::none_of(NON_QUERY_PARAMETER_KEYS.cbegin(), NON_QUERY_PARAMETER_KEYS.cend(), [this, inputKey](const QString& key){
+            return inputKey == key;
+            }))
+        {
+            m_query.addQueryItem(inputKey, parameters[inputKey].toString());
+        }
+    });
+}
+
 QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
 {
     QNetworkRequest request;
@@ -255,6 +267,10 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
     }
 
     tileUrl = QUrl(basemapUrl);
+    
+    if (!m_query.isEmpty())
+        tileUrl.setQuery(m_query);
+
     request.setUrl(tileUrl);
     return new QGeoMapReplyMapbox(m_networkManager->get(request), spec, m_replyFormat, m_enableLogging);
 }

@@ -54,7 +54,7 @@ and Custom tiles (provided via custom basemap url) can be done without plugin [r
 
 ### Added
 - MapTiler satellite and streets map tile URLs as default map styles
+- Set additional parameters to the URL query items
 
 ### Removed
 - MapBox default tile URLs in QGeoTileFetcherMapbox
-
