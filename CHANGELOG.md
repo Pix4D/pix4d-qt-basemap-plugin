@@ -50,7 +50,7 @@ and Custom tiles (provided via custom basemap url) can be done without plugin [r
 - QtBasemapPlugin is being upgraded and based on Qt 6.7.1-0
 
 
-## QtBasemapPlugin 2.1.0-0
+## QtBasemapPlugin 2.0.0-11
 
 ### Added
 - MapTiler satellite and streets map tile URLs as default map styles
