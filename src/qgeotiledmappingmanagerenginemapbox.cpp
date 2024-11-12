@@ -72,7 +72,7 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
 
     QList<QGeoMapType> mapTypes;
     mapTypes << QGeoMapType(QGeoMapType::SatelliteMapDay,
-                            QGeoTileFetcherMapbox::PIX4D_SATELLITE,
+                            QGeoTileFetcherMapbox::PIX4D_STREETS_SATELLITE,
                             QStringLiteral("Satellite"),
                             false,
                             false,
@@ -80,8 +80,8 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
                             pluginName,
                             cameraCaps);
     mapTypes << QGeoMapType(QGeoMapType::StreetMap,
-                            QGeoTileFetcherMapbox::PIX4D_STREETS,
-                            QStringLiteral("Streets"),
+                            QGeoTileFetcherMapbox::PIX4D_STREET,
+                            QStringLiteral("Street"),
                             false,
                             false,
                             mapTypes.size(),
@@ -92,7 +92,7 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     getParameter(parameters, "custom_basemap_url", customBasemapUrl);
     if (!customBasemapUrl.isEmpty())
         mapTypes << QGeoMapType(QGeoMapType::CustomMap,
-                                QGeoTileFetcherMapbox::PIX4D_CUSTOM,
+                                "custom",
                                 QStringLiteral("Custom"),
                                 false,
                                 false,
@@ -134,8 +134,17 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     {
         tileFetcher->setFormat(format);
     }
-    
-    tileFetcher->setAdditionalParameters(parameters);
+
+    QString accessToken;
+    if (getParameter(parameters, "access_token", accessToken))
+    {
+        tileFetcher->setAccessToken(accessToken);
+    }
+    else
+    {
+        qCritical() << "Basemap Plugin no access token was set";
+    }
+
     setTileFetcher(tileFetcher);
 
     if (customBasemapUrl.isEmpty())

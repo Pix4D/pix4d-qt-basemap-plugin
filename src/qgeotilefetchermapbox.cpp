@@ -120,6 +120,7 @@ QGeoTileFetcherMapbox::QGeoTileFetcherMapbox(int scaleFactor, bool enableLogging
     m_userAgent(mapboxDefaultUserAgent),
     m_format("png"),
     m_replyFormat("png"),
+    m_accessToken(""),
     m_enableLogging(enableLogging),
     m_customBasemapUrl(customBasemapUrl)
 {
@@ -148,16 +149,9 @@ void QGeoTileFetcherMapbox::setFormat(const QString &format)
         qWarning() << "Unknown map format " << m_format;
 }
 
-void QGeoTileFetcherMapbox::setAdditionalParameters(const QVariantMap& parameters)
+void QGeoTileFetcherMapbox::setAccessToken(const QString &accessToken)
 {
-    std::for_each(parameters.keyBegin(), parameters.keyEnd(), [this, parameters](const auto& inputKey){
-        if (std::none_of(NON_QUERY_PARAMETER_KEYS.cbegin(), NON_QUERY_PARAMETER_KEYS.cend(), [this, inputKey](const QString& key){
-            return inputKey == key;
-            }))
-        {
-            m_query.addQueryItem(inputKey, parameters[inputKey].toString());
-        }
-    });
+    m_accessToken = accessToken;
 }
 
 QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
@@ -165,113 +159,123 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
     QNetworkRequest request;
     request.setRawHeader("User-Agent", m_userAgent);
 
-    QUrl tileUrl;
-    const QString x = QString::number(spec.x());
-    const QString y = QString::number(spec.y());
-    const QString z = QString::number(spec.zoom());
-    QString q, r, bbox, invY, wmsVersion;
-    QStringList subdomains;
-    
-    QString basemapUrl;
     const bool isCustomBasemapRequest = (spec.mapId() < m_mapIds.size()) && !m_customBasemapUrl.isEmpty() && (m_mapIds[spec.mapId()] == PIX4D_CUSTOM);
-    if (isCustomBasemapRequest)
-        basemapUrl = m_customBasemapUrl;
-    else if (m_mapIds[spec.mapId()] == PIX4D_STREETS)
-        basemapUrl = MAPTILER_STREETS_URL;
-    else // if (m_mapIds[spec.mapId()] == PIX4D_SATELLITE)
-        basemapUrl = MAPTILER_SATELLITE_URL;
 
-    basemapUrl = basemapUrl.replace("{x}", x);
-    basemapUrl = basemapUrl.replace("{y}", y);
-    basemapUrl = basemapUrl.replace("{z}", z);
-    basemapUrl = basemapUrl.replace("{s}", "{sabc}");
+    QUrl tileUrl;
+    if (!isCustomBasemapRequest)
+    {
+        tileUrl = QUrl(QStringLiteral("https://api.mapbox.com/styles/v1/cloudpix4d/")
+                + ((spec.mapId() >= m_mapIds.size()) ? PIX4D_STREET : m_mapIds[spec.mapId()])
+                + QLatin1String("/tiles/256/")
+                + QString::number(spec.zoom())
+                + QLatin1Char('/')
+                + QString::number(spec.x())
+                + QLatin1Char('/')
+                + QString::number(spec.y())
+                + ((m_scaleFactor > 1) ? (QLatin1Char('@') + QString::number(m_scaleFactor) + QLatin1Char('x')) : QString())
+                + QLatin1Char('?')
+                + QStringLiteral("access_token=")
+                + m_accessToken);
+    }
+    else
+    {
+        const QString x = QString::number(spec.x());
+        const QString y = QString::number(spec.y());
+        const QString z = QString::number(spec.zoom());
+        QString q, r, bbox, invY, wmsVersion;
+        QStringList subdomains;
 
-    if (basemapUrl.contains("{-y}"))
-    {
-        invY = QString::number((1 << spec.zoom()) - spec.y() - 1);
-        basemapUrl = basemapUrl.replace("{-y}", invY);
-    }
+        auto basemapUrl = m_customBasemapUrl;
+        basemapUrl = basemapUrl.replace("{x}", x);
+        basemapUrl = basemapUrl.replace("{y}", y);
+        basemapUrl = basemapUrl.replace("{z}", z);
+        basemapUrl = basemapUrl.replace("{s}", "{sabc}");
 
-    if (basemapUrl.contains("{q}"))
-    {
-        q = tileToQuad(spec);
-        basemapUrl = basemapUrl.replace("{q}", q);
-    }
-
-    if (basemapUrl.contains("{r}"))
-    {
-        r = m_scaleFactor > 1 ? QLatin1Char('@') + QString::number(m_scaleFactor) + QLatin1String("x") : "";
-        basemapUrl = basemapUrl.replace("{r}", r);
-    }
-
-    if (basemapUrl.contains("{bbox4326}"))
-    {
-        // Version 1.3 and higher of WMS urls uses latitude first
-        const int versionIndex = basemapUrl.toLower().indexOf("version=");
-        wmsVersion = versionIndex >= 0 ? basemapUrl.mid(versionIndex + 8, 3) : "0.0";
-        bbox = bbox4326ToString(spec, wmsVersion.toDouble() < 1.3);
-        basemapUrl = basemapUrl.replace("{bbox4326}", bbox);
-    }
-    else if (basemapUrl.contains("{bbox4326_lonlat}"))
-    {
-        bbox = bbox4326ToString(spec, true);
-        basemapUrl = basemapUrl.replace("{bbox4326_lonlat}", bbox);
-    }
-    else if (basemapUrl.contains("{bbox4326_latlon}"))
-    {
-        bbox = bbox4326ToString(spec, false);
-        basemapUrl = basemapUrl.replace("{bbox4326_latlon}", bbox);
-    }
-    else if (basemapUrl.contains("{bbox3857}"))
-    {
-        bbox = bbox3857ToString(spec);
-        basemapUrl = basemapUrl.replace("{bbox3857}", bbox);
-    }
-
-    int startIndex = basemapUrl.indexOf(QLatin1String("{s"));
-    while (startIndex != -1)
-    {
-        const int endIndex = basemapUrl.indexOf(QLatin1Char('}'), startIndex);
-        if (endIndex != -1)
+        if (basemapUrl.contains("{-y}"))
         {
-            const int count = endIndex - startIndex + 1;
-            const auto value = basemapUrl.mid(startIndex + 2, std::max(count - 3, 0));
-            subdomains.push_back(replaceSubdomain(spec, value));
-            basemapUrl.replace(startIndex, count, subdomains.back());
-            startIndex = basemapUrl.indexOf(QLatin1String("{s"));
+            invY = QString::number((1 << spec.zoom()) - spec.y() - 1);
+            basemapUrl = basemapUrl.replace("{-y}", invY);
         }
-        else
+
+        if (basemapUrl.contains("{q}"))
         {
-            if (m_enableLogging)
+            q = tileToQuad(spec);
+            basemapUrl = basemapUrl.replace("{q}", q);
+        }
+
+        if (basemapUrl.contains("{r}"))
+        {
+            r = m_scaleFactor > 1 ? QLatin1Char('@') + QString::number(m_scaleFactor) + QLatin1String("x") : "";
+            basemapUrl = basemapUrl.replace("{r}", r);
+        }
+
+        if (basemapUrl.contains("{bbox4326}"))
+        {
+            // Version 1.3 and higher of WMS urls uses latitude first
+            const int versionIndex = basemapUrl.toLower().indexOf("version=");
+            wmsVersion = versionIndex >= 0 ? basemapUrl.mid(versionIndex + 8, 3) : "0.0";
+            bbox = bbox4326ToString(spec, wmsVersion.toDouble() < 1.3);
+            basemapUrl = basemapUrl.replace("{bbox4326}", bbox);
+        }
+        else if (basemapUrl.contains("{bbox4326_lonlat}"))
+        {
+            bbox = bbox4326ToString(spec, true);
+            basemapUrl = basemapUrl.replace("{bbox4326_lonlat}", bbox);
+        }
+        else if (basemapUrl.contains("{bbox4326_latlon}"))
+        {
+            bbox = bbox4326ToString(spec, false);
+            basemapUrl = basemapUrl.replace("{bbox4326_latlon}", bbox);
+        }
+        else if (basemapUrl.contains("{bbox3857}"))
+        {
+            bbox = bbox3857ToString(spec);
+            basemapUrl = basemapUrl.replace("{bbox3857}", bbox);
+        }
+
+        int startIndex = basemapUrl.indexOf(QLatin1String("{s"));
+        while (startIndex != -1)
+        {
+            const int endIndex = basemapUrl.indexOf(QLatin1Char('}'), startIndex);
+            if (endIndex != -1)
             {
-                qCritical() << "Basemap custom URL invalid {";
+                const int count = endIndex - startIndex + 1;
+                const auto value = basemapUrl.mid(startIndex + 2, std::max(count - 3, 0));
+                subdomains.push_back(replaceSubdomain(spec, value));
+                basemapUrl.replace(startIndex, count, subdomains.back());
+                startIndex = basemapUrl.indexOf(QLatin1String("{s"));
             }
-            break;
+            else
+            {
+                if (m_enableLogging)
+                {
+                    qCritical() << "Basemap custom URL invalid {";
+                }
+                break;
+            }
         }
-    }
 
-    if (m_enableLogging)
-    {
-        const QString provider = QUrl(basemapUrl).host();
-        QString urlDetails = provider +
-            " {x}=" + x +
-            " {y}=" + y +
-            " {z}=" + z +
-            (!q.isEmpty() ? " {q}=" + q : "") +
-            (!r.isEmpty() ? " {r}=" + r : "") +
-            (!invY.isEmpty() ? " {-y}=" + invY : "") +
-            (!subdomains.isEmpty() ? " {s}=" + subdomains.join(", ") : "") +
-            (!bbox.isEmpty() ? " {bbox}=" + bbox : "") +
-            (!wmsVersion.isEmpty() ? " with version " + wmsVersion : "");
-        qInfo() << "Basemap tile requested" << urlDetails;
-    }
+        if (m_enableLogging)
+        {
+            const QString provider = QUrl(basemapUrl).host();
+            QString urlDetails = provider +
+                " {x}=" + x +
+                " {y}=" + y +
+                " {z}=" + z +
+                (!q.isEmpty() ? " {q}=" + q : "") +
+                (!r.isEmpty() ? " {r}=" + r : "") +
+                (!invY.isEmpty() ? " {-y}=" + invY : "") +
+                (!subdomains.isEmpty() ? " {s}=" + subdomains.join(", ") : "") +
+                (!bbox.isEmpty() ? " {bbox}=" + bbox : "") +
+                (!wmsVersion.isEmpty() ? " with version " + wmsVersion : "");
+            qInfo() << "Basemap tile requested" << urlDetails;
+        }
 
-    tileUrl = QUrl(basemapUrl);
-    
-    if (!m_query.isEmpty())
-        tileUrl.setQuery(m_query);
+        tileUrl = QUrl(basemapUrl);
+    }
 
     request.setUrl(tileUrl);
+
     return new QGeoMapReplyMapbox(m_networkManager->get(request), spec, m_replyFormat, m_enableLogging);
 }
 
