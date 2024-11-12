@@ -10,6 +10,9 @@
 
 QT_BEGIN_NAMESPACE
 
+static const QString MAPTILER_SATELLITE_URL = QStringLiteral("https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg");
+static const QString MAPTILER_STREETS_URL = QStringLiteral("https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png");
+
 static const QString mapboxTilesApiPath = QStringLiteral("http://api.tiles.mapbox.com/v4/");
 
 // https://www.mapbox.com/api-documentation/#geocoding
@@ -22,6 +25,16 @@ static const QString mapboxDirectionsApiPath = QStringLiteral("https://api.mapbo
 static const QByteArray mapboxDefaultUserAgent = QByteArrayLiteral("Qt Location based application");
 
 static const qreal mapboxDefaultRadius = 50000;
+
+const QStringList NON_QUERY_PARAMETER_KEYS{QStringLiteral("enable_logging"),
+    QStringLiteral("maximum_zoom_level"),
+    QStringLiteral("no_map_tiles"),
+    QStringLiteral("custom_basemap_url"),
+    QStringLiteral("highdpi_tiles"),
+    QStringLiteral("useragent"),
+    QStringLiteral("format"),
+    QStringLiteral("cache_directory"),
+};
 
 class QMapboxCommon
 {
