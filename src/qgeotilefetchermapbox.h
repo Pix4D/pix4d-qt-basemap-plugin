@@ -6,6 +6,7 @@
 
 #include <qlist.h>
 #include <QtLocation/private/qgeotilefetcher_p.h>
+#include <QUrlQuery>
 
 QT_BEGIN_NAMESPACE
 
@@ -28,6 +29,7 @@ public:
     void setUserAgent(const QByteArray &userAgent);
     void setMapIds(const QList<QString> &mapIds);
     void setFormat(const QString &format);
+    void setAdditionalParameters(const QVariantMap& parameters);
 
 private:
     QGeoTiledMapReply *getTileImage(const QGeoTileSpec &spec) override;
@@ -40,6 +42,7 @@ private:
     int m_scaleFactor;
     bool m_enableLogging{false};
     QString m_customBasemapUrl;
+    QUrlQuery m_query;
 };
 
 QT_END_NAMESPACE

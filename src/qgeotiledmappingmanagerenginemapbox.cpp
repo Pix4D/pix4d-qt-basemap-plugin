@@ -134,7 +134,8 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     {
         tileFetcher->setFormat(format);
     }
-
+    
+    tileFetcher->setAdditionalParameters(parameters);
     setTileFetcher(tileFetcher);
 
     if (customBasemapUrl.isEmpty())
