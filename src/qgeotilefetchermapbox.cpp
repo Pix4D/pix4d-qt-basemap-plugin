@@ -150,12 +150,12 @@ void QGeoTileFetcherMapbox::setFormat(const QString &format)
 
 void QGeoTileFetcherMapbox::setAdditionalParameters(const QVariantMap& parameters)
 {
-    std::for_each(parameters.keyBegin(), parameters.keyEnd(), [this, parameters](const auto& inputKey){
-        if (std::none_of(NON_QUERY_PARAMETER_KEYS.cbegin(), NON_QUERY_PARAMETER_KEYS.cend(), [this, inputKey](const QString& key){
-            return inputKey == key;
+    std::for_each(parameters.constKeyValueBegin(), parameters.constKeyValueEnd(), [this](const auto& pair){
+        if (std::none_of(NON_QUERY_PARAMETER_KEYS.cbegin(), NON_QUERY_PARAMETER_KEYS.cend(), [this, pair](const QString& key){
+                return pair.first == key;
             }))
         {
-            m_query.addQueryItem(inputKey, parameters[inputKey].toString());
+            m_query.addQueryItem(pair.first, pair.second.toString());
         }
     });
 }
@@ -171,15 +171,16 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
     const QString z = QString::number(spec.zoom());
     QString q, r, bbox, invY, wmsVersion;
     QStringList subdomains;
-    
+
     QString basemapUrl;
-    const bool isCustomBasemapRequest = (spec.mapId() < m_mapIds.size()) && !m_customBasemapUrl.isEmpty() && (m_mapIds[spec.mapId()] == PIX4D_CUSTOM);
-    if (isCustomBasemapRequest)
+
+    const auto mapId = spec.mapId() < m_mapIds.size() ? m_mapIds[spec.mapId()] : "";
+    if ((mapId == PIX4D_CUSTOM) && !m_customBasemapUrl.isEmpty())
         basemapUrl = m_customBasemapUrl;
-    else if (m_mapIds[spec.mapId()] == PIX4D_STREETS)
-        basemapUrl = MAPTILER_STREETS_URL;
-    else // if (m_mapIds[spec.mapId()] == PIX4D_SATELLITE)
+    else if (mapId == PIX4D_SATELLITE)
         basemapUrl = MAPTILER_SATELLITE_URL;
+    else // if (mapId == PIX4D_STREETS || mapId == "")
+        basemapUrl = MAPTILER_STREETS_URL;
 
     basemapUrl = basemapUrl.replace("{x}", x);
     basemapUrl = basemapUrl.replace("{y}", y);
