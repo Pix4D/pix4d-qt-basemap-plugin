@@ -67,3 +67,4 @@ and Custom tiles (provided via custom basemap url) can be done without plugin [r
 
 ### Changed
 - Update MapBox plugin URL
+- Replace MapBox map type name to general map type name for map tile caching

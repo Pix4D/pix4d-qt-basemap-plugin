@@ -19,9 +19,9 @@ class QGeoTileFetcherMapbox : public QGeoTileFetcher
 
 public:
     // The list of map style names:
-    static constexpr const char* PIX4D_STREETS = "Streets";
-    static constexpr const char* PIX4D_SATELLITE = "Satellite";
-    static constexpr const char* PIX4D_CUSTOM = "Custom";
+    static constexpr const char* PIX4D_STREETS = "streets";
+    static constexpr const char* PIX4D_SATELLITE = "satellite";
+    static constexpr const char* PIX4D_CUSTOM = "custom";
 
 public:
     QGeoTileFetcherMapbox(int scaleFactor, bool enableLogging, const QString& customBasemapUrl, QGeoTiledMappingManagerEngine *parent);
