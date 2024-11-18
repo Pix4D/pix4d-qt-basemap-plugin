@@ -61,3 +61,10 @@ and Custom tiles (provided via custom basemap url) can be done without plugin [r
 
 ### Removed
 - MapBox default tile URLs in QGeoTileFetcherMapbox
+
+
+## QtBasemapPlugin 2.1.0-1
+
+### Changed
+- Update MapBox plugin URL
+- Replace MapBox map type name to general map type name for map tile caching

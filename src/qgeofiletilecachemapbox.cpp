@@ -12,7 +12,7 @@ QGeoFileTileCacheMapbox::QGeoFileTileCacheMapbox(const QList<QGeoMapType> &mapTy
                                                  QObject *parent)
     :QGeoFileTileCache(directory, parent), 
     m_enableLogging(enableLogging), 
-    m_hasCacheDirectory(!directory.isEmpty()), 
+    m_hasCacheDirectory(!directory.isEmpty()),
     m_mapTypes(mapTypes)
 {
     m_scaleFactor = qBound(1, scaleFactor, 2);
@@ -64,11 +64,10 @@ QGeoTileSpec QGeoFileTileCacheMapbox::filenameToTileSpec(const QString &filename
     // @See QGeoFileTileCacheMapBox for more information for this function
     // General scheme is: plugin_name - map_type - zoom - x - y - @scale.png
     // For now the cached tiles names look like this: 
-    //   basemap_pix4d_100-ck8zzfxb30vwp1jo04yktjtbg-13-4401-2685-@2x.png or
-    //   basemap_pix4d_100-ck8zz9gpq0vty1ip30bji3b5a-16-35208-21496-@1x.png
+    //   basemap_pix4d_100-satellite-11-1091-655-@2x.png or
+    //   basemap_pix4d_100-streets-16-35012-20990-@2x.png
     // basemap_pix4d_100 = plugin name
-    // ck8zzfxb30vwp1jo04yktjtbg = streets-satellite type map
-    // ck8zz9gpq0vty1ip30bji3b5a = street type map
+    // Satellite or Streets = map type name
     // 13 = zoom
     // 4401-2685 = x, y
 
@@ -91,10 +90,10 @@ QGeoTileSpec QGeoFileTileCacheMapbox::filenameToTileSpec(const QString &filename
         return QGeoTileSpec();
     }
 
-    // name = mapbox_pix4d_100-ck8zzfxb30vwp1jo04yktjtbg-13-4401-2685-@2x (no extension)
+    // name = basemap_pix4d_100-streets-16-35012-20990-@2x (no extension)
     const QString name = parts.at(0);
     const QStringList fields = name.split('-');
-
+    
     // must be at least 6 different fields
     if (fields.length() < 6)
     {
