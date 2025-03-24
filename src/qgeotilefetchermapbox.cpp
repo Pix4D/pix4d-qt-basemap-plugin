@@ -264,7 +264,7 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
             (!subdomains.isEmpty() ? " {s}=" + subdomains.join(", ") : "") +
             (!bbox.isEmpty() ? " {bbox}=" + bbox : "") +
             (!wmsVersion.isEmpty() ? " with version " + wmsVersion : "");
-        qInfo() << "Basemap tile requested" << urlDetails;
+        qInfo() << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss") << " basemap tile requested" << urlDetails;
     }
 
     tileUrl = QUrl(basemapUrl);
