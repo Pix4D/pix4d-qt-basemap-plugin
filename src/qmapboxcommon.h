@@ -10,8 +10,8 @@
 
 QT_BEGIN_NAMESPACE
 
-static const QString MAPTILER_SATELLITE_URL = QStringLiteral("https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg");
-static const QString MAPTILER_STREETS_URL = QStringLiteral("https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png");
+static const QString MAPTILER_SATELLITE_URL = QStringLiteral("https://api.maptiler.com/tiles/satellite-v2/{z}/{x}/{y}.jpg");
+static const QString MAPTILER_STREETS_URL = QStringLiteral("https://api.maptiler.com/tiles/streets-v2/{z}/{x}/{y}.png");
 
 static const QString mapboxTilesApiPath = QStringLiteral("http://api.tiles.mapbox.com/v4/");
 
