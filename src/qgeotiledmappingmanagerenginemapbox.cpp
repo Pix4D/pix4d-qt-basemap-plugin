@@ -8,6 +8,7 @@
 #include <QtLocation/private/qgeomaptype_p.h>
 #include <QtLocation/private/qgeotiledmap_p.h>
 #include "qgeofiletilecachemapbox.h"
+
 typedef QGeoTiledMap Map;
 
 namespace
@@ -67,10 +68,18 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     cameraCaps.setOverzoomEnabled(true);
     setCameraCapabilities(cameraCaps);
 
-    setTileSize(QSize(256, 256));
+    setTileSize(QSize(512, 512));
     m_noMapTiles = getParameter(parameters, "no_map_tiles");
 
     QList<QGeoMapType> mapTypes;
+    mapTypes << QGeoMapType(QGeoMapType::NoMap,
+                            QGeoTileFetcherMapbox::PIX4D_NONE,
+                            QStringLiteral("None"),
+                            false,
+                            false,
+                            mapTypes.size(),
+                            pluginName,
+                            cameraCaps);
     mapTypes << QGeoMapType(QGeoMapType::SatelliteMapDay,
                             QGeoTileFetcherMapbox::PIX4D_SATELLITE,
                             QStringLiteral("Satellite"),
@@ -91,6 +100,7 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     QString customBasemapUrl;
     getParameter(parameters, "custom_basemap_url", customBasemapUrl);
     if (!customBasemapUrl.isEmpty())
+    {
         mapTypes << QGeoMapType(QGeoMapType::CustomMap,
                                 QGeoTileFetcherMapbox::PIX4D_CUSTOM,
                                 QStringLiteral("Custom"),
@@ -99,7 +109,7 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
                                 mapTypes.size(),
                                 pluginName,
                                 cameraCaps);
-
+    }
 
     if (enableLogging)
     {
@@ -138,26 +148,24 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     tileFetcher->setAdditionalParameters(parameters);
     setTileFetcher(tileFetcher);
 
-    if (customBasemapUrl.isEmpty())
+    // Set up the tile cache
+    QString cacheDirectory;
+    if (!getParameter(parameters, "cache_directory", cacheDirectory))
     {
-        // Set up the tile cache
-        QString cacheDirectory;
-        if (!getParameter(parameters, "cache_directory", cacheDirectory))
-        {
-            cacheDirectory = QAbstractGeoTileCache::baseLocationCacheDirectory() + QLatin1String(pluginName);
-        }
-
-        auto tileCache = new QGeoFileTileCacheMapbox(mapTypes, scaleFactor, enableLogging, cacheDirectory);
-        tileCache->setCostStrategyDisk(QGeoFileTileCache::Unitary);
-        tileCache->setCostStrategyMemory(QGeoFileTileCache::ByteSize);
-        tileCache->setCostStrategyTexture(QGeoFileTileCache::ByteSize);
-        tileCache->setMaxDiskUsage(6000);
-        setTileCache(tileCache);
+        cacheDirectory = QAbstractGeoTileCache::baseLocationCacheDirectory() + QLatin1String(pluginName);
     }
-    else
+
+    auto tileCache = new QGeoFileTileCacheMapbox(mapTypes, scaleFactor, enableLogging, cacheDirectory);
+    tileCache->setCostStrategyDisk(QGeoFileTileCache::Unitary);
+    tileCache->setCostStrategyMemory(QGeoFileTileCache::ByteSize);
+    tileCache->setCostStrategyTexture(QGeoFileTileCache::ByteSize);
+    tileCache->setMaxDiskUsage(6000);
+    setTileCache(tileCache);
+
+    if (!customBasemapUrl.isEmpty())
     {
         // Do not cache any custom user maps due to legality
-        setCacheHint(QAbstractGeoTileCache::CacheArea::MemoryCache);
+        setCacheHint(QAbstractGeoTileCache::CacheArea::AllCaches);
     }
 
     *error = QGeoServiceProvider::NoError;

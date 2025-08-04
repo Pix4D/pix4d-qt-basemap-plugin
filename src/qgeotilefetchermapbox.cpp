@@ -145,7 +145,7 @@ void QGeoTileFetcherMapbox::setFormat(const QString &format)
     else if (m_format == "jpg70" || m_format == "jpg80" || m_format == "jpg90")
         m_replyFormat = "jpg";
     else
-        qWarning() << "Unknown map format " << m_format;
+        qWarning() << "QGeoTileFetcher: Unknown map format " << m_format;
 }
 
 void QGeoTileFetcherMapbox::setAdditionalParameters(const QVariantMap& parameters)
@@ -173,14 +173,27 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
     QStringList subdomains;
 
     QString basemapUrl;
-
     const auto mapId = spec.mapId() < m_mapIds.size() ? m_mapIds[spec.mapId()] : "";
-    if ((mapId == PIX4D_CUSTOM) && !m_customBasemapUrl.isEmpty())
-        basemapUrl = m_customBasemapUrl;
-    else if (mapId == PIX4D_SATELLITE)
+    if (mapId == PIX4D_SATELLITE)
+    {
         basemapUrl = MAPTILER_SATELLITE_URL;
-    else // if (mapId == PIX4D_STREETS || mapId == "")
+    }
+    else if (mapId == PIX4D_STREETS)
+    {
         basemapUrl = MAPTILER_STREETS_URL;
+    }
+    else if ((mapId == PIX4D_CUSTOM) && !m_customBasemapUrl.isEmpty())
+    {
+        basemapUrl = m_customBasemapUrl;
+    }
+    else
+    {
+        if (m_enableLogging)
+        {
+            qInfo() << "QGeoTileFetcher: The selected basemap is NONE or the basemap URL is empty. Selected basemap type is " << mapId;
+        }
+        return nullptr;
+    }
 
     basemapUrl = basemapUrl.replace("{x}", x);
     basemapUrl = basemapUrl.replace("{y}", y);
@@ -245,7 +258,7 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
         {
             if (m_enableLogging)
             {
-                qCritical() << "Basemap custom URL invalid {";
+                qCritical() << "QGeoTileFetcher: Basemap custom URL invalid {";
             }
             break;
         }
@@ -264,7 +277,7 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
             (!subdomains.isEmpty() ? " {s}=" + subdomains.join(", ") : "") +
             (!bbox.isEmpty() ? " {bbox}=" + bbox : "") +
             (!wmsVersion.isEmpty() ? " with version " + wmsVersion : "");
-        qInfo() << "Basemap tile requested" << urlDetails;
+        qInfo() << "QGeoTileFetcher: Basemap tile requested" << urlDetails;
     }
 
     tileUrl = QUrl(basemapUrl);

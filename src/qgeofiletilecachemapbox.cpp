@@ -1,7 +1,9 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#include "qgeotilefetchermapbox.h"
 #include "qgeofiletilecachemapbox.h"
+
 #include <QtLocation/private/qgeotilespec_p.h>
 #include <QDir>
 
@@ -30,6 +32,18 @@ QString QGeoFileTileCacheMapbox::tileSpecToFilename(const QGeoTileSpec &spec, co
 {
     if (!m_hasCacheDirectory)
     {
+        if (m_enableLogging)
+        {
+            qWarning() << "GeoFileTileCache: No cache directory.";
+        }
+        return QString();
+    }
+    if (m_mapTypes[spec.mapId()].name() == QGeoTileFetcherMapbox::PIX4D_CUSTOM)
+    {
+        if (m_enableLogging)
+        {
+            qInfo() << "GeoFileTileCache: Do not cache any custom user maps due to legality. The read/write error can be ignored.";
+        }
         return QString();
     }
 
