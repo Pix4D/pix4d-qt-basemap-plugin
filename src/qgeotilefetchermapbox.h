@@ -22,6 +22,7 @@ public:
     static constexpr const char* PIX4D_STREETS = "streets";
     static constexpr const char* PIX4D_SATELLITE = "satellite";
     static constexpr const char* PIX4D_CUSTOM = "custom";
+    static constexpr const char* PIX4D_NONE = "none";
 
 public:
     QGeoTileFetcherMapbox(int scaleFactor, bool enableLogging, const QString& customBasemapUrl, QGeoTiledMappingManagerEngine *parent);
