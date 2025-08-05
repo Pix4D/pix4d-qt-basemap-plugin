@@ -164,7 +164,11 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
 
     if (!customBasemapUrl.isEmpty())
     {
-        // Do not cache any custom user maps due to legality
+        // If custom basemap URL is not empty, enable both CacheArea::DiskCache and CacheArea::MemoryCache.
+        // CacheArea::DiskCache is only for default basemaps that can cache in directory as same as when custom basemap URL is empty.
+        // CacheArea::MemoryCache is for custom basemaps that do not cache tile images to files due to legality.
+        // In QGeoFileTileCacheMapbox::tileSpecToFilename(),
+        // tile images of custom basemaps will be skipped saving in cache directory and will use only memory cache.
         setCacheHint(QAbstractGeoTileCache::CacheArea::AllCaches);
     }
 

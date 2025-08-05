@@ -42,8 +42,11 @@ QString QGeoFileTileCacheMapbox::tileSpecToFilename(const QGeoTileSpec &spec, co
     {
         if (m_enableLogging)
         {
-            qInfo() << "GeoFileTileCache: Do not cache any custom user maps due to legality. The read/write error can be ignored.";
+            qInfo() << "GeoFileTileCache: Do not cache any custom user maps due to legality. The read/write warnings can be ignored.";
         }
+        // Will get the warnings because it returns empty QString
+        // WARNING: qt-msg: QFSFileEngine::open: No file name specified
+        // WARNING: qt-msg: QIODevice::write (QFile, ""): device not open
         return QString();
     }
 
