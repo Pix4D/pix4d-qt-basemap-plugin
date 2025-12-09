@@ -4,9 +4,6 @@
 cmake_minimum_required(VERSION 3.17)
 project(BasemapHelpers VERSION 1.0.0 LANGUAGES CXX)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_set_find_paths()
-
 set(HELPERS_PACKAGE_NAME BasemapHelpers)
 set(CMAKE_BUILD_TYPE Release)
 
