@@ -39,6 +39,7 @@ target_include_directories(${HELPERS_PACKAGE_NAME}
 target_link_libraries(${HELPERS_PACKAGE_NAME} PUBLIC
     Qt6::Core
     Qt6::Location
+ PRIVATE
     Qt6::LocationPrivate
 )
 
