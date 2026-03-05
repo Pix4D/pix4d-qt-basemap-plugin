@@ -286,7 +286,7 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
         tileUrl.setQuery(m_query);
 
     request.setUrl(tileUrl);
-    return new QGeoMapReplyMapbox(m_networkManager->get(request), spec, m_replyFormat, m_enableLogging);
+    return new QGeoMapReplyMapbox(m_networkManager, request, spec, m_replyFormat, m_enableLogging);
 }
 
 QT_END_NAMESPACE
