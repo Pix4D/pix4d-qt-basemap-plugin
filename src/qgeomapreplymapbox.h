@@ -5,6 +5,7 @@
 #define QGEOMAPREPLYMAPBOX_H
 
 #include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
 #include <QtLocation/private/qgeotiledmapreply_p.h>
 #include <QtCore/QPointer>
 
@@ -15,7 +16,13 @@ class QGeoMapReplyMapbox : public QGeoTiledMapReply
     Q_OBJECT
 
 public:
-    explicit QGeoMapReplyMapbox(QNetworkReply *reply, const QGeoTileSpec &spec, const QString &format, bool enableLogging, QObject *parent = nullptr);
+    explicit QGeoMapReplyMapbox(QNetworkAccessManager *networkManager,
+                                const QNetworkRequest &request,
+                                const QGeoTileSpec &spec,
+                                const QString &format,
+                                bool enableLogging,
+                                int maxRetries = 2,
+                                QObject *parent = nullptr);
     ~QGeoMapReplyMapbox();
 
 private Q_SLOTS:
@@ -23,8 +30,15 @@ private Q_SLOTS:
     void networkReplyError(QNetworkReply::NetworkError error);
 
 private:
+    void startRequest();
+    void connectReply(QNetworkReply *reply);
+    bool isRetriableError(int httpStatus) const;
+
+    QNetworkAccessManager *m_networkManager;
+    QNetworkRequest m_request;
     QString m_format;
     bool m_enableLogging{false};
+    int m_retriesLeft{0};
 };
 
 QT_END_NAMESPACE
