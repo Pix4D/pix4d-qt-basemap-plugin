@@ -17,6 +17,13 @@ public:
     QGeoFileTileCacheMapbox(const QList<QGeoMapType> &mapTypes, int scaleFactor, bool enableLogging, const QString &directory = QString(), QObject *parent = nullptr);
     ~QGeoFileTileCacheMapbox();
 
+    // Highest zoom level at which the tile server actually serves tiles.
+    // get() substitutes an ancestor tile for any spec past this level so the
+    // basemap stays visible while overzooming.
+    void setMaximumZoomLevel(int maxZoom);
+
+    QSharedPointer<QGeoTileTexture> get(const QGeoTileSpec &spec) override;
+
 protected:
     QString tileSpecToFilename(const QGeoTileSpec &spec, const QString &format, const QString &directory) const override;
     QGeoTileSpec filenameToTileSpec(const QString &filename) const override;
@@ -26,6 +33,7 @@ protected:
     QList<QGeoMapType> m_mapTypes;
     QMap<QString, int> m_mapNameToId;
     int m_scaleFactor;
+    int m_maximumZoomLevel{-1};
 };
 
 QT_END_NAMESPACE

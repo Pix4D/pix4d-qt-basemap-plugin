@@ -27,6 +27,44 @@ QGeoFileTileCacheMapbox::~QGeoFileTileCacheMapbox()
 
 }
 
+void QGeoFileTileCacheMapbox::setMaximumZoomLevel(int maxZoom)
+{
+    m_maximumZoomLevel = maxZoom;
+}
+
+QSharedPointer<QGeoTileTexture> QGeoFileTileCacheMapbox::get(const QGeoTileSpec &spec)
+{
+    // First try the requested tile at its actual zoom level.
+    QSharedPointer<QGeoTileTexture> tex = QGeoFileTileCache::get(spec);
+    if (tex && !tex->image.isNull())
+        return tex;
+
+    // If we are overzooming past the tile server's maximum zoom, substitute the appropriate
+    // ancestor tile so QGeoTiledMapScene can stretch it. The returned texture's spec carries
+    // the ancestor's lower zoom level; QGeoTiledMapScenePrivate::buildGeometry detects this
+    // (it.value()->spec.zoom() < spec.zoom()) and renders the correct sub-rectangle.
+    //
+    // This bypasses QGeoTileRequestManager's hard-coded 4-level overzoom lookback in
+    // qtlocation/src/location/maps/qgeotilerequestmanager.cpp, so the basemap remains
+    // visible at arbitrarily deep zoom levels instead of turning black.
+    if (m_maximumZoomLevel > 0 && spec.zoom() > m_maximumZoomLevel)
+    {
+        const int delta = spec.zoom() - m_maximumZoomLevel;
+        const int denom = 1 << delta;
+        const QGeoTileSpec ancestor(spec.plugin(),
+                                    spec.mapId(),
+                                    m_maximumZoomLevel,
+                                    spec.x() / denom,
+                                    spec.y() / denom,
+                                    spec.version());
+        QSharedPointer<QGeoTileTexture> ancestorTex = QGeoFileTileCache::get(ancestor);
+        if (ancestorTex && !ancestorTex->image.isNull())
+            return ancestorTex;
+    }
+
+    return tex;
+}
+
 QString QGeoFileTileCacheMapbox::tileSpecToFilename(const QGeoTileSpec &spec, const QString &format,
                                                     const QString &directory) const
 {

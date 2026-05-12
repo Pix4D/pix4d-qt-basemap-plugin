@@ -156,6 +156,7 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     }
 
     auto tileCache = new QGeoFileTileCacheMapbox(mapTypes, scaleFactor, enableLogging, cacheDirectory);
+    tileCache->setMaximumZoomLevel(maximumZoomLevel);
     tileCache->setCostStrategyDisk(QGeoFileTileCache::Unitary);
     tileCache->setCostStrategyMemory(QGeoFileTileCache::ByteSize);
     tileCache->setCostStrategyTexture(QGeoFileTileCache::ByteSize);
