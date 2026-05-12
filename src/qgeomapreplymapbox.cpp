@@ -32,6 +32,12 @@ QGeoMapReplyMapbox::~QGeoMapReplyMapbox()
 {
 }
 
+void QGeoMapReplyMapbox::setAncestorRemap(const QGeoTileSpec &ancestorSpec)
+{
+    m_ancestorSpec = ancestorSpec;
+    m_ancestorRemap = true;
+}
+
 void QGeoMapReplyMapbox::startRequest()
 {
     QNetworkReply *reply = m_networkManager->get(m_request);
@@ -73,7 +79,33 @@ void QGeoMapReplyMapbox::networkReplyFinished()
         return;
     }
 
-    setMapImageData(reply->readAll());
+    const QByteArray bytes = reply->readAll();
+
+    if (m_ancestorRemap)
+    {
+        // The URL we fetched is actually the maxZoom ancestor of our
+        // (high-zoom) tileSpec(). Fan out the result in two stages:
+        //   1. ancestorReady -> QGeoTileFetcherMapbox emits tileFinished for
+        //      the ancestor spec, which makes
+        //      QGeoTiledMappingManagerEngine::engineTileFinished() cache the
+        //      real bytes under the ancestor's filename. From there
+        //      QGeoFileTileCacheMapbox::get() will substitute it (stretched)
+        //      for any high-zoom request whose ancestor is this one.
+        //   2. setFinished(true) below emits the reply's own finished signal
+        //      with an *empty* payload under the original (high-zoom) spec.
+        //      QGeoFileTileCacheMapbox::isTileBogus() short-circuits the
+        //      disk write, but the empty emission still flows through
+        //      engineTileFinished -> QGeoTileRequestManager::tileFetched(),
+        //      clearing m_requested so the next render cycle re-asks the
+        //      cache and the substitution returns the freshly-cached
+        //      ancestor.
+        emit ancestorReady(m_ancestorSpec, bytes, m_format);
+        setMapImageData(QByteArray());
+    }
+    else
+    {
+        setMapImageData(bytes);
+    }
     setMapImageFormat(m_format);
     setFinished(true);
 }

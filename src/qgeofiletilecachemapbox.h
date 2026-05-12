@@ -25,6 +25,12 @@ public:
     QSharedPointer<QGeoTileTexture> get(const QGeoTileSpec &spec) override;
 
 protected:
+    // Treat empty payloads as bogus. QGeoTileFetcherMapbox emits an empty
+    // tileFinished() for the original high-zoom spec after a remapped
+    // ancestor download succeeds, just to clear m_requested in the request
+    // manager. Without this override the empty payload would also create a
+    // zero-byte file on disk for every overzoomed tile.
+    bool isTileBogus(const QByteArray &bytes) const override;
     QString tileSpecToFilename(const QGeoTileSpec &spec, const QString &format, const QString &directory) const override;
     QGeoTileSpec filenameToTileSpec(const QString &filename) const override;
 

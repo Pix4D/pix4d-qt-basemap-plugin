@@ -124,7 +124,8 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
 
     const int scaleFactor = getParameter(parameters, "highdpi_tiles") ? 2 : 1;
     QGeoTileFetcherMapbox* tileFetcher = new QGeoTileFetcherMapbox(scaleFactor, enableLogging, customBasemapUrl, this);
-    
+    tileFetcher->setMaximumZoomLevel(maximumZoomLevel);
+
     QVector<QString> mapIds;
     for (const auto& type : std::as_const(mapTypes))
     {

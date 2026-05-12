@@ -136,6 +136,11 @@ void QGeoTileFetcherMapbox::setMapIds(const QList<QString> &mapIds)
     m_mapIds = mapIds;
 }
 
+void QGeoTileFetcherMapbox::setMaximumZoomLevel(int maxZoom)
+{
+    m_maximumZoomLevel = maxZoom;
+}
+
 void QGeoTileFetcherMapbox::setFormat(const QString &format)
 {
     m_format = format;
@@ -160,20 +165,61 @@ void QGeoTileFetcherMapbox::setAdditionalParameters(const QVariantMap& parameter
     });
 }
 
+void QGeoTileFetcherMapbox::onAncestorReady(const QGeoTileSpec &ancestor,
+                                            const QByteArray &bytes,
+                                            const QString &format)
+{
+    // Re-emit the fetcher's tileFinished signal with the *ancestor* spec so
+    // that QGeoTiledMappingManagerEngine::engineTileFinished() inserts the
+    // bytes into the tile cache under the ancestor's filename, where
+    // QGeoFileTileCacheMapbox::get() will find them when stretching for
+    // higher-zoom requests in the same area.
+    emit tileFinished(ancestor, bytes, format);
+}
+
 QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
 {
+    // If the request is above the API maximum zoom, fetch the maxZoom ancestor
+    // URL instead. The reply still represents `spec` from Qt's point of view,
+    // but the bytes (delivered via ancestorReady) get cached under the
+    // ancestor's spec so QGeoFileTileCacheMapbox::get() can substitute them.
+    QGeoTileSpec urlSpec = spec;
+    bool remap = false;
+    if (m_maximumZoomLevel > 0 && spec.zoom() > m_maximumZoomLevel)
+    {
+        const int delta = spec.zoom() - m_maximumZoomLevel;
+        const int denom = 1 << delta;
+        urlSpec = QGeoTileSpec(spec.plugin(),
+                               spec.mapId(),
+                               m_maximumZoomLevel,
+                               spec.x() / denom,
+                               spec.y() / denom,
+                               spec.version());
+        remap = true;
+    }
+
+    // Deduplicate: if some other high-zoom request is already fetching this
+    // ancestor, park `spec` as a follower and wait for the leader to settle.
+    // Without this, a 4x4-zoom-level overzoom would fire ~64 identical URL
+    // requests per viewport change.
+    if (remap && m_pendingHighZoomForAncestor.contains(urlSpec))
+    {
+        m_pendingHighZoomForAncestor[urlSpec].append(spec);
+        return nullptr;
+    }
+
     QNetworkRequest request;
     request.setRawHeader("User-Agent", m_userAgent);
 
     QUrl tileUrl;
-    const QString x = QString::number(spec.x());
-    const QString y = QString::number(spec.y());
-    const QString z = QString::number(spec.zoom());
+    const QString x = QString::number(urlSpec.x());
+    const QString y = QString::number(urlSpec.y());
+    const QString z = QString::number(urlSpec.zoom());
     QString q, r, bbox, invY, wmsVersion;
     QStringList subdomains;
 
     QString basemapUrl;
-    const auto mapId = spec.mapId() < m_mapIds.size() ? m_mapIds[spec.mapId()] : "";
+    const auto mapId = urlSpec.mapId() < m_mapIds.size() ? m_mapIds[urlSpec.mapId()] : "";
     if (mapId == PIX4D_SATELLITE)
     {
         basemapUrl = MAPTILER_SATELLITE_URL;
@@ -202,13 +248,13 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
 
     if (basemapUrl.contains("{-y}"))
     {
-        invY = QString::number((1 << spec.zoom()) - spec.y() - 1);
+        invY = QString::number((1 << urlSpec.zoom()) - urlSpec.y() - 1);
         basemapUrl = basemapUrl.replace("{-y}", invY);
     }
 
     if (basemapUrl.contains("{q}"))
     {
-        q = tileToQuad(spec);
+        q = tileToQuad(urlSpec);
         basemapUrl = basemapUrl.replace("{q}", q);
     }
 
@@ -223,22 +269,22 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
         // Version 1.3 and higher of WMS urls uses latitude first
         const int versionIndex = basemapUrl.toLower().indexOf("version=");
         wmsVersion = versionIndex >= 0 ? basemapUrl.mid(versionIndex + 8, 3) : "0.0";
-        bbox = bbox4326ToString(spec, wmsVersion.toDouble() < 1.3);
+        bbox = bbox4326ToString(urlSpec, wmsVersion.toDouble() < 1.3);
         basemapUrl = basemapUrl.replace("{bbox4326}", bbox);
     }
     else if (basemapUrl.contains("{bbox4326_lonlat}"))
     {
-        bbox = bbox4326ToString(spec, true);
+        bbox = bbox4326ToString(urlSpec, true);
         basemapUrl = basemapUrl.replace("{bbox4326_lonlat}", bbox);
     }
     else if (basemapUrl.contains("{bbox4326_latlon}"))
     {
-        bbox = bbox4326ToString(spec, false);
+        bbox = bbox4326ToString(urlSpec, false);
         basemapUrl = basemapUrl.replace("{bbox4326_latlon}", bbox);
     }
     else if (basemapUrl.contains("{bbox3857}"))
     {
-        bbox = bbox3857ToString(spec);
+        bbox = bbox3857ToString(urlSpec);
         basemapUrl = basemapUrl.replace("{bbox3857}", bbox);
     }
 
@@ -250,7 +296,7 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
         {
             const int count = endIndex - startIndex + 1;
             const auto value = basemapUrl.mid(startIndex + 2, std::max(count - 3, 0));
-            subdomains.push_back(replaceSubdomain(spec, value));
+            subdomains.push_back(replaceSubdomain(urlSpec, value));
             basemapUrl.replace(startIndex, count, subdomains.back());
             startIndex = basemapUrl.indexOf(QLatin1String("{s"));
         }
@@ -286,7 +332,49 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
         tileUrl.setQuery(m_query);
 
     request.setUrl(tileUrl);
-    return new QGeoMapReplyMapbox(m_networkManager, request, spec, m_replyFormat, m_enableLogging);
+    auto *reply = new QGeoMapReplyMapbox(m_networkManager, request, spec, m_replyFormat, m_enableLogging);
+
+    if (remap)
+    {
+        reply->setAncestorRemap(urlSpec);
+        connect(reply, &QGeoMapReplyMapbox::ancestorReady,
+                this, &QGeoTileFetcherMapbox::onAncestorReady);
+
+        // Mark the ancestor in flight; the bucket also holds any followers.
+        m_pendingHighZoomForAncestor.insert(urlSpec, QList<QGeoTileSpec>());
+
+        // When the leader reply finishes, wake every parked follower so its
+        // high-zoom spec gets cleared from QGeoTileRequestManager::m_requested
+        // and the next render cycle picks up the freshly-cached ancestor via
+        // QGeoFileTileCacheMapbox::get()'s substitution path.
+        const QGeoTileSpec ancestor = urlSpec;
+        connect(reply, &QGeoTiledMapReply::finished, this,
+                [this, ancestor, reply]() {
+                    const auto followers = m_pendingHighZoomForAncestor.take(ancestor);
+                    if (followers.isEmpty())
+                        return;
+                    if (reply->error() == QGeoTiledMapReply::NoError)
+                    {
+                        const QString format = reply->mapImageFormat();
+                        for (const auto &s : followers)
+                            emit tileFinished(s, QByteArray(), format);
+                    }
+                    else
+                    {
+                        const QString err = reply->errorString();
+                        for (const auto &s : followers)
+                            emit tileError(s, err);
+                    }
+                });
+        // Safety net: if the leader is destroyed without firing finished()
+        // (cancel paths), at least drop the bookkeeping so a later sibling
+        // request can issue its own leader instead of waiting forever.
+        connect(reply, &QObject::destroyed, this, [this, ancestor]() {
+            m_pendingHighZoomForAncestor.remove(ancestor);
+        });
+    }
+
+    return reply;
 }
 
 QT_END_NAMESPACE

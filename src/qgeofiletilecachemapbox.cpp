@@ -65,6 +65,16 @@ QSharedPointer<QGeoTileTexture> QGeoFileTileCacheMapbox::get(const QGeoTileSpec 
     return tex;
 }
 
+bool QGeoFileTileCacheMapbox::isTileBogus(const QByteArray &bytes) const
+{
+    // QGeoTileFetcherMapbox emits an empty-payload tileFinished() for the
+    // original high-zoom spec after the remapped ancestor download succeeds.
+    // We rely on that emission to clear QGeoTileRequestManager::m_requested,
+    // but we don't want a zero-byte file written to disk for every overzoomed
+    // tile - so flag empty payloads as bogus to short-circuit the disk write.
+    return bytes.isEmpty();
+}
+
 QString QGeoFileTileCacheMapbox::tileSpecToFilename(const QGeoTileSpec &spec, const QString &format,
                                                     const QString &directory) const
 {
