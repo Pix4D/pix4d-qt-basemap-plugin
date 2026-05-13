@@ -40,7 +40,7 @@ QSharedPointer<QGeoTileTexture> QGeoFileTileCacheMapbox::get(const QGeoTileSpec 
         return tex;
 
     // If we are overzooming past the tile server's maximum zoom, substitute
-    // the appropriate ancestor tile so QGeoTiledMapScene can stretch it. The
+    // the best cached ancestor so QGeoTiledMapScene can stretch it. The
     // returned texture's spec carries the ancestor's lower zoom level;
     // QGeoTiledMapScenePrivate::buildGeometry detects this (texture->spec.zoom()
     // < requested.zoom()) and renders the correct sub-rectangle scaled up.
@@ -49,19 +49,35 @@ QSharedPointer<QGeoTileTexture> QGeoFileTileCacheMapbox::get(const QGeoTileSpec 
     // a texture *before* its hard-coded 4-level overzoom lookback runs, a hit
     // here also bypasses that loop entirely - and removes the high-zoom spec
     // from the request set so no 404-bound HTTP request is ever issued.
+    //
+    // We walk from maximum_zoom_level down toward 0 instead of only probing
+    // maximum_zoom_level: for tile servers (e.g. MapTiler satellite) whose
+    // *effective* per-area top zoom is lower than the configured maximum, the
+    // ancestor at maximum_zoom_level will 404 forever and never enter the
+    // cache. In that case we'd rather hand back a more pixelated lower-zoom
+    // tile that we *do* have (typically from prefetch or an earlier zoom-out
+    // session) than fall through to QGeoTileRequestManager's hard-coded 4-
+    // level fallback and return black. When the real ancestor eventually
+    // lands in cache, addTile() detects the spec collision via
+    // m_textures and m_updatedTextures replaces the QSGTexture on the next
+    // frame, so the stretched stand-in only stays around as long as it has to.
     if (m_maximumZoomLevel > 0 && spec.zoom() > m_maximumZoomLevel)
     {
-        const int delta = spec.zoom() - m_maximumZoomLevel;
-        const int denom = 1 << delta;
-        const QGeoTileSpec ancestor(spec.plugin(),
-                                    spec.mapId(),
-                                    m_maximumZoomLevel,
-                                    spec.x() / denom,
-                                    spec.y() / denom,
-                                    spec.version());
-        QSharedPointer<QGeoTileTexture> ancestorTex = QGeoFileTileCache::get(ancestor);
-        if (ancestorTex && !ancestorTex->image.isNull())
-            return ancestorTex;
+        const int maxDelta = qMin<int>(spec.zoom(), 30); // guard 1 << delta
+        for (int delta = spec.zoom() - m_maximumZoomLevel; delta <= maxDelta; ++delta)
+        {
+            const int ancestorZoom = spec.zoom() - delta;
+            const int denom = 1 << delta;
+            const QGeoTileSpec ancestor(spec.plugin(),
+                                        spec.mapId(),
+                                        ancestorZoom,
+                                        spec.x() / denom,
+                                        spec.y() / denom,
+                                        spec.version());
+            QSharedPointer<QGeoTileTexture> ancestorTex = QGeoFileTileCache::get(ancestor);
+            if (ancestorTex && !ancestorTex->image.isNull())
+                return ancestorTex;
+        }
     }
 
     return QSharedPointer<QGeoTileTexture>();

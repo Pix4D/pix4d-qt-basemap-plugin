@@ -53,6 +53,7 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
 {
     const QByteArray pluginName = PLUGIN_NAME.toUtf8();
     const bool enableLogging = getParameter(parameters, "enable_logging");
+    m_enableLogging = enableLogging;
 
     m_maximumZoomLevel = 25;
     getParameter(parameters, "maximum_zoom_level", m_maximumZoomLevel);
@@ -210,6 +211,9 @@ void QGeoTiledMappingManagerEngineMapbox::updateTileRequests(QGeoTiledMap *map,
     QSet<QGeoTileSpec> translatedAdded;
     QSet<QGeoTileSpec> translatedRemoved;
 
+    int maxFollowerZoom = -1;
+    int overzoomCount = 0;
+
     for (const QGeoTileSpec &tile : tilesAdded)
     {
         if (m_maximumZoomLevel > 0 && tile.zoom() > m_maximumZoomLevel)
@@ -217,11 +221,22 @@ void QGeoTiledMappingManagerEngineMapbox::updateTileRequests(QGeoTiledMap *map,
             const QGeoTileSpec ancestor = ancestorForTile(tile);
             m_overzoomTiles[ancestor][map].insert(tile);
             translatedAdded.insert(ancestor);
+            if (tile.zoom() > maxFollowerZoom)
+                maxFollowerZoom = tile.zoom();
+            ++overzoomCount;
         }
         else
         {
             translatedAdded.insert(tile);
         }
+    }
+
+    if (m_enableLogging && overzoomCount > 0)
+    {
+        qInfo().nospace() << "BasemapPlugin overzoom: " << overzoomCount
+                          << " follower(s) at zoom up to " << maxFollowerZoom
+                          << " translated to " << translatedAdded.size()
+                          << " ancestor(s) at zoom " << m_maximumZoomLevel;
     }
 
     for (const QGeoTileSpec &tile : tilesRemoved)

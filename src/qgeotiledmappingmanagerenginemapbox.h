@@ -43,6 +43,7 @@ private:
 
     QString m_cacheDirectory;
     bool m_noMapTiles{false};
+    bool m_enableLogging{false};
     int m_maximumZoomLevel{-1};
     // ancestor -> map -> set of high-zoom followers waiting for that ancestor.
     QHash<QGeoTileSpec, QHash<QGeoTiledMap *, QSet<QGeoTileSpec>>> m_overzoomTiles;
