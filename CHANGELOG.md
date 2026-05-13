@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Plugin-side overzoom handling: when the camera zooms past `maximum_zoom_level`,
+  the engine reroutes the request to the corresponding ancestor tile at
+  `maximum_zoom_level` (deduplicating siblings) and the file tile cache
+  substitutes that ancestor for the high-zoom spec on lookup. This keeps the
+  basemap visible at any overzoom depth and avoids issuing HTTP requests for
+  tiles the tile server does not serve, without patching Qt's
+  `QGeoTileRequestManager` 4-level fallback.
 
 ### Changed
 
@@ -68,3 +75,4 @@ and Custom tiles (provided via custom basemap url) can be done without plugin [r
 ### Changed
 - Update MapBox plugin URL
 - Replace MapBox map type name to general map type name for map tile caching
+
