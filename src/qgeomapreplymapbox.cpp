@@ -34,6 +34,13 @@ QGeoMapReplyMapbox::~QGeoMapReplyMapbox()
 
 void QGeoMapReplyMapbox::startRequest()
 {
+    if (!m_networkManager)
+    {
+        setError(UnknownError, QStringLiteral("Network manager unavailable"));
+        setFinished(true);
+        return;
+    }
+
     QNetworkReply *reply = m_networkManager->get(m_request);
     if (!reply)
     {
@@ -94,6 +101,13 @@ void QGeoMapReplyMapbox::networkReplyError(QNetworkReply::NetworkError error)
 
     if (m_retriesLeft > 0 && isRetriableError(httpStatus))
     {
+        if (!m_networkManager)
+        {
+            setError(QGeoTiledMapReply::CommunicationError, errorMsg);
+            setFinished(true);
+            return;
+        }
+
         --m_retriesLeft;
         if (m_enableLogging)
         {
