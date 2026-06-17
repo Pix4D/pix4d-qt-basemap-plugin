@@ -34,7 +34,7 @@ private:
     void connectReply(QNetworkReply *reply);
     bool isRetriableError(int httpStatus) const;
 
-    QNetworkAccessManager *m_networkManager;
+    QPointer<QNetworkAccessManager> m_networkManager;
     QNetworkRequest m_request;
     QString m_format;
     bool m_enableLogging{false};
