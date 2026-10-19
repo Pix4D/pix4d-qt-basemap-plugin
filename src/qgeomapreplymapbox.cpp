@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qgeomapreplymapbox.h"
+#include "qgeotilefetchermapbox.h"
 
 #include <QtLocation/private/qgeotilespec_p.h>
 #include <QTimer>
@@ -11,15 +12,24 @@ QGeoMapReplyMapbox::QGeoMapReplyMapbox(QNetworkAccessManager *networkManager,
                                        const QGeoTileSpec &spec,
                                        const QString &format,
                                        bool enableLogging,
+                                       QGeoTileFetcherMapbox *fetcher,
+                                       QNetworkReply *runningDownload,
                                        int maxRetries,
                                        QObject *parent)
 :   QGeoTiledMapReply(spec, parent),
+    m_fetcher(fetcher),
     m_networkManager(networkManager),
     m_request(request),
     m_format(format),
     m_enableLogging(enableLogging),
     m_retriesLeft(maxRetries)
 {
+    connect(this, &QGeoTiledMapReply::aborted, this, &QGeoMapReplyMapbox::handOverDownload);
+    if (runningDownload)
+    {
+        connectReply(runningDownload);
+        return;
+    }
     if (!m_networkManager)
     {
         setError(UnknownError, QStringLiteral("Null network manager"));
@@ -30,6 +40,24 @@ QGeoMapReplyMapbox::QGeoMapReplyMapbox(QNetworkAccessManager *networkManager,
 
 QGeoMapReplyMapbox::~QGeoMapReplyMapbox()
 {
+    if (m_networkReply)
+        m_networkReply->deleteLater();
+}
+
+void QGeoMapReplyMapbox::handOverDownload()
+{
+    QNetworkReply *reply = m_networkReply;
+    if (!reply)
+        return;
+
+    disconnect(reply, nullptr, this, nullptr);
+    m_networkReply = nullptr;
+    // Aborting resets the HTTP/2 stream, and servers answer too many resets with GOAWAY PROTOCOL_ERROR.
+    if (!m_fetcher || !m_fetcher->adoptCancelledDownload(reply, tileSpec(), m_format))
+    {
+        reply->abort();
+        reply->deleteLater();
+    }
 }
 
 void QGeoMapReplyMapbox::startRequest()
@@ -52,12 +80,11 @@ void QGeoMapReplyMapbox::startRequest()
 
 void QGeoMapReplyMapbox::connectReply(QNetworkReply *reply)
 {
+    m_networkReply = reply;
     connect(reply, &QNetworkReply::finished,
             this, &QGeoMapReplyMapbox::networkReplyFinished);
     connect(reply, &QNetworkReply::errorOccurred,
             this, &QGeoMapReplyMapbox::networkReplyError);
-    connect(this, &QGeoTiledMapReply::aborted, reply, &QNetworkReply::abort);
-    connect(this, &QObject::destroyed, reply, &QObject::deleteLater);
 }
 
 bool QGeoMapReplyMapbox::isRetriableError(int httpStatus) const
@@ -74,6 +101,8 @@ void QGeoMapReplyMapbox::networkReplyFinished()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     reply->deleteLater();
+    if (m_networkReply == reply)
+        m_networkReply = nullptr;
 
     if (reply->error() != QNetworkReply::NoError)
     {
@@ -89,6 +118,8 @@ void QGeoMapReplyMapbox::networkReplyError(QNetworkReply::NetworkError error)
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     reply->deleteLater();
+    if (m_networkReply == reply)
+        m_networkReply = nullptr;
 
     if (error == QNetworkReply::OperationCanceledError)
     {
