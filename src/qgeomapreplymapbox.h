@@ -39,6 +39,8 @@ private:
     void connectReply(QNetworkReply *reply);
     void handOverDownload();
     bool isRetriableError(int httpStatus) const;
+    /// Exponential backoff with jitter: 500 ms, then 1 s, and so on, plus up to half of that at random.
+    int retryDelayMs(QNetworkReply::NetworkError error);
 
     QPointer<QGeoTileFetcherMapbox> m_fetcher;
     QPointer<QNetworkReply> m_networkReply;
@@ -47,6 +49,7 @@ private:
     QString m_format;
     bool m_enableLogging{false};
     int m_retriesLeft{0};
+    int m_retryCount{0};
 };
 
 QT_END_NAMESPACE

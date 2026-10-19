@@ -5,7 +5,14 @@
 #include "qgeotilefetchermapbox.h"
 
 #include <QtLocation/private/qgeotilespec_p.h>
+#include <QRandomGenerator>
 #include <QTimer>
+
+namespace
+{
+    constexpr int RETRY_BASE_DELAY_MS = 500;
+    constexpr int RETRY_AFTER_CONNECTION_DROP_MS = 1500;
+}
 
 QGeoMapReplyMapbox::QGeoMapReplyMapbox(QNetworkAccessManager *networkManager,
                                        const QNetworkRequest &request,
@@ -97,6 +104,16 @@ bool QGeoMapReplyMapbox::isRetriableError(int httpStatus) const
         || httpStatus == 504;
 }
 
+int QGeoMapReplyMapbox::retryDelayMs(QNetworkReply::NetworkError error)
+{
+    int delayMs = RETRY_BASE_DELAY_MS << qMin(m_retryCount++, 4);
+    // After a dropped connection (such as a GOAWAY), give the server time before reconnecting.
+    if (error == QNetworkReply::ProtocolFailure || error == QNetworkReply::RemoteHostClosedError)
+        delayMs = qMax(delayMs, RETRY_AFTER_CONNECTION_DROP_MS);
+    // Jitter keeps the tiles that failed together from retrying together.
+    return delayMs + QRandomGenerator::global()->bounded(delayMs / 2 + 1);
+}
+
 void QGeoMapReplyMapbox::networkReplyFinished()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
@@ -140,12 +157,13 @@ void QGeoMapReplyMapbox::networkReplyError(QNetworkReply::NetworkError error)
         }
 
         --m_retriesLeft;
+        const int delayMs = retryDelayMs(error);
         if (m_enableLogging)
         {
             qWarning() << "QGeoMapReplyMapbox:" << errorMsg
-                        << "- retrying (" << m_retriesLeft << "left)";
+                        << "- retrying in" << delayMs << "ms (" << m_retriesLeft << "left)";
         }
-        QTimer::singleShot(500, this, &QGeoMapReplyMapbox::startRequest);
+        QTimer::singleShot(delayMs, this, &QGeoMapReplyMapbox::startRequest);
         return;
     }
 
