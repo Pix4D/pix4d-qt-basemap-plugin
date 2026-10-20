@@ -13,13 +13,12 @@
 #include <QtLocation/private/qgeotiledmappingmanagerengine_p.h>
 #include <QtLocation/private/qgeotilespec_p.h>
 #include <QtLocation/private/qabstractgeotilecache_p.h>
-#include <QtNetwork/QNetworkReply>
 #include <QDebug>
 #include <QTimer>
 
 namespace
 {
-    // Long enough for a slow tile; afterwards the download is aborted after all.
+    // A cancelled download still running after this is aborted.
     constexpr int CANCELLED_DOWNLOAD_TIMEOUT_MS = 30000;
 
     QString tileToQuad(const QGeoTileSpec& spec)
@@ -166,14 +165,13 @@ void QGeoTileFetcherMapbox::setAdditionalParameters(const QVariantMap& parameter
     });
 }
 
-bool QGeoTileFetcherMapbox::adoptCancelledDownload(QNetworkReply *reply, const QGeoTileSpec &spec, const QString &format)
+bool QGeoTileFetcherMapbox::adoptCancelledDownload(QNetworkReply *reply, const QGeoTileSpec &spec)
 {
     if (reply->isFinished())
         return false;
 
     m_cancelledDownloads.insert(spec, reply);
-    connect(reply, &QNetworkReply::finished, this,
-            [this, reply, spec, format]() { cancelledDownloadFinished(reply, spec, format); });
+    connect(reply, &QNetworkReply::finished, this, [this, reply, spec]() { cancelledDownloadFinished(reply, spec); });
     QTimer::singleShot(CANCELLED_DOWNLOAD_TIMEOUT_MS, reply, [this, reply, spec]() {
         if (m_cancelledDownloads.value(spec) == reply)
             reply->abort();
@@ -181,7 +179,7 @@ bool QGeoTileFetcherMapbox::adoptCancelledDownload(QNetworkReply *reply, const Q
     return true;
 }
 
-void QGeoTileFetcherMapbox::cancelledDownloadFinished(QNetworkReply *reply, const QGeoTileSpec &spec, const QString &format)
+void QGeoTileFetcherMapbox::cancelledDownloadFinished(QNetworkReply *reply, const QGeoTileSpec &spec)
 {
     reply->deleteLater();
     if (m_cancelledDownloads.value(spec) == reply)
@@ -189,7 +187,7 @@ void QGeoTileFetcherMapbox::cancelledDownloadFinished(QNetworkReply *reply, cons
 
     const QByteArray data = reply->error() == QNetworkReply::NoError ? reply->readAll() : QByteArray();
     if (!data.isEmpty())
-        m_engine->tileCache()->insert(spec, data, format, m_engine->cacheHint());
+        m_engine->tileCache()->insert(spec, data, m_replyFormat, m_engine->cacheHint());
     if (m_enableLogging)
         qInfo() << "QGeoTileFetcher: Cancelled tile download finished" << spec << "with" << data.size() << "bytes";
 }
@@ -323,8 +321,6 @@ QGeoTiledMapReply *QGeoTileFetcherMapbox::getTileImage(const QGeoTileSpec &spec)
 
     // A tile requested again while its cancelled download still runs takes that download over.
     QNetworkReply *runningDownload = m_cancelledDownloads.take(spec);
-    if (runningDownload && runningDownload->isFinished())
-        runningDownload = nullptr;
     if (runningDownload)
         disconnect(runningDownload, nullptr, this, nullptr);
     return new QGeoMapReplyMapbox(m_networkManager, request, spec, m_replyFormat, m_enableLogging, this,

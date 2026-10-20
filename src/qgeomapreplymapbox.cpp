@@ -8,6 +8,9 @@
 #include <QRandomGenerator>
 #include <QTimer>
 
+#include <algorithm>
+#include <utility>
+
 namespace
 {
     constexpr int RETRY_BASE_DELAY_MS = 500;
@@ -53,14 +56,13 @@ QGeoMapReplyMapbox::~QGeoMapReplyMapbox()
 
 void QGeoMapReplyMapbox::handOverDownload()
 {
-    QNetworkReply *reply = m_networkReply;
+    QNetworkReply *reply = std::exchange(m_networkReply, nullptr);
     if (!reply)
         return;
 
     disconnect(reply, nullptr, this, nullptr);
-    m_networkReply = nullptr;
     // Aborting resets the HTTP/2 stream, and servers answer too many resets with GOAWAY PROTOCOL_ERROR.
-    if (!m_fetcher || !m_fetcher->adoptCancelledDownload(reply, tileSpec(), m_format))
+    if (!m_fetcher || !m_fetcher->adoptCancelledDownload(reply, tileSpec()))
     {
         reply->abort();
         reply->deleteLater();
@@ -106,10 +108,10 @@ bool QGeoMapReplyMapbox::isRetriableError(int httpStatus) const
 
 int QGeoMapReplyMapbox::retryDelayMs(QNetworkReply::NetworkError error)
 {
-    int delayMs = RETRY_BASE_DELAY_MS << qMin(m_retryCount++, 4);
-    // After a dropped connection (such as a GOAWAY), give the server time before reconnecting.
+    int delayMs = RETRY_BASE_DELAY_MS << std::min(m_retryCount++, 4);
+    // After a dropped connection, such as a GOAWAY, give the server time before reconnecting.
     if (error == QNetworkReply::ProtocolFailure || error == QNetworkReply::RemoteHostClosedError)
-        delayMs = qMax(delayMs, RETRY_AFTER_CONNECTION_DROP_MS);
+        delayMs = std::max(delayMs, RETRY_AFTER_CONNECTION_DROP_MS);
     // Jitter keeps the tiles that failed together from retrying together.
     return delayMs + QRandomGenerator::global()->bounded(delayMs / 2 + 1);
 }
@@ -118,8 +120,6 @@ void QGeoMapReplyMapbox::networkReplyFinished()
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     reply->deleteLater();
-    if (m_networkReply == reply)
-        m_networkReply = nullptr;
 
     if (reply->error() != QNetworkReply::NoError)
     {
@@ -135,8 +135,6 @@ void QGeoMapReplyMapbox::networkReplyError(QNetworkReply::NetworkError error)
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     reply->deleteLater();
-    if (m_networkReply == reply)
-        m_networkReply = nullptr;
 
     if (error == QNetworkReply::OperationCanceledError)
     {

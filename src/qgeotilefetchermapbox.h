@@ -36,13 +36,12 @@ public:
     void setFormat(const QString &format);
     void setAdditionalParameters(const QVariantMap& parameters);
 
-    /// Takes over the running download of a cancelled tile, so it finishes into the tile cache instead of being
-    /// aborted. Returns false when the caller must abort it.
-    bool adoptCancelledDownload(QNetworkReply *reply, const QGeoTileSpec &spec, const QString &format);
+    // Lets the download of a cancelled tile finish into the tile cache. Returns false if the caller must abort it.
+    bool adoptCancelledDownload(QNetworkReply *reply, const QGeoTileSpec &spec);
 
 private:
     QGeoTiledMapReply *getTileImage(const QGeoTileSpec &spec) override;
-    void cancelledDownloadFinished(QNetworkReply *reply, const QGeoTileSpec &spec, const QString &format);
+    void cancelledDownloadFinished(QNetworkReply *reply, const QGeoTileSpec &spec);
 
     QGeoTiledMappingManagerEngine *m_engine;
     QNetworkAccessManager *m_networkManager;

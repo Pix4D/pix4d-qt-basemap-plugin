@@ -156,9 +156,8 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     }
 
     auto tileCache = new QGeoFileTileCacheMapbox(mapTypes, scaleFactor, enableLogging, cacheDirectory);
-    // A tile file is 25-50 KB, so 500 MB holds 10,000-20,000 tiles. Memory holds compressed tiles and is the only
-    // cache for custom basemaps. A decoded 512 px tile is 1 MB, so 256 MB keeps about 256 decoded tiles beyond the
-    // visible ones; fewer make panning and zooming decode the same tiles again on the UI thread.
+    // Disk holds 10,000-20,000 tiles. Memory holds compressed tiles and is the only cache for custom basemaps.
+    // Textures are decoded tiles of 1 MB each; with fewer, panning back decodes the same tiles again on the UI thread.
     constexpr int MB = 1024 * 1024;
     tileCache->setCostStrategyDisk(QGeoFileTileCache::ByteSize);
     tileCache->setCostStrategyMemory(QGeoFileTileCache::ByteSize);

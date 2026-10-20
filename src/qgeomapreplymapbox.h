@@ -18,7 +18,7 @@ class QGeoMapReplyMapbox : public QGeoTiledMapReply
     Q_OBJECT
 
 public:
-    /// Uses \a runningDownload, a download of the same tile that is still running, instead of sending a new GET.
+    // A non-null runningDownload is a still running download of the same tile, used instead of a new GET.
     explicit QGeoMapReplyMapbox(QNetworkAccessManager *networkManager,
                                 const QNetworkRequest &request,
                                 const QGeoTileSpec &spec,
@@ -39,7 +39,7 @@ private:
     void connectReply(QNetworkReply *reply);
     void handOverDownload();
     bool isRetriableError(int httpStatus) const;
-    /// Exponential backoff with jitter: 500 ms, then 1 s, and so on, plus up to half of that at random.
+    // 500 ms before the first retry and 1 s before the second, plus up to half of that at random.
     int retryDelayMs(QNetworkReply::NetworkError error);
 
     QPointer<QGeoTileFetcherMapbox> m_fetcher;
