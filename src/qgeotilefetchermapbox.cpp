@@ -14,12 +14,11 @@
 #include <QtLocation/private/qgeotilespec_p.h>
 #include <QtLocation/private/qabstractgeotilecache_p.h>
 #include <QDebug>
-#include <QTimer>
 
 namespace
 {
-    // A cancelled download still running after this is aborted.
-    constexpr int CANCELLED_DOWNLOAD_TIMEOUT_MS = 30000;
+    // A download that receives no data for this long is aborted, so a stalled connection cannot hold a tile forever.
+    constexpr std::chrono::seconds TRANSFER_TIMEOUT{30};
 
     QString tileToQuad(const QGeoTileSpec& spec)
     {
@@ -129,6 +128,7 @@ QGeoTileFetcherMapbox::QGeoTileFetcherMapbox(int scaleFactor, bool enableLogging
     m_customBasemapUrl(customBasemapUrl)
 {
     m_scaleFactor = qBound(1, scaleFactor, 2);
+    m_networkManager->setTransferTimeout(TRANSFER_TIMEOUT);
 }
 
 void QGeoTileFetcherMapbox::setUserAgent(const QByteArray &userAgent)
@@ -172,10 +172,6 @@ bool QGeoTileFetcherMapbox::adoptCancelledDownload(QNetworkReply *reply, const Q
 
     m_cancelledDownloads.insert(spec, reply);
     connect(reply, &QNetworkReply::finished, this, [this, reply, spec]() { cancelledDownloadFinished(reply, spec); });
-    QTimer::singleShot(CANCELLED_DOWNLOAD_TIMEOUT_MS, reply, [this, reply, spec]() {
-        if (m_cancelledDownloads.value(spec) == reply)
-            reply->abort();
-    });
     return true;
 }
 

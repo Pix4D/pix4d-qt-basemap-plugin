@@ -24,9 +24,8 @@ QGeoMapReplyMapbox::QGeoMapReplyMapbox(QNetworkAccessManager *networkManager,
                                        bool enableLogging,
                                        QGeoTileFetcherMapbox *fetcher,
                                        QNetworkReply *runningDownload,
-                                       int maxRetries,
-                                       QObject *parent)
-:   QGeoTiledMapReply(spec, parent),
+                                       int maxRetries)
+:   QGeoTiledMapReply(spec, fetcher),
     m_fetcher(fetcher),
     m_networkManager(networkManager),
     m_request(request),
@@ -62,7 +61,7 @@ void QGeoMapReplyMapbox::handOverDownload()
 
     disconnect(reply, nullptr, this, nullptr);
     // Aborting resets the HTTP/2 stream, and servers answer too many resets with GOAWAY PROTOCOL_ERROR.
-    if (!m_fetcher || !m_fetcher->adoptCancelledDownload(reply, tileSpec()))
+    if (!m_fetcher->adoptCancelledDownload(reply, tileSpec()))
     {
         reply->abort();
         reply->deleteLater();
@@ -71,6 +70,9 @@ void QGeoMapReplyMapbox::handOverDownload()
 
 void QGeoMapReplyMapbox::startRequest()
 {
+    // A retry can still be scheduled when the tile is cancelled.
+    if (isFinished())
+        return;
     if (!m_networkManager)
     {
         setError(UnknownError, QStringLiteral("Network manager unavailable"));
@@ -131,16 +133,11 @@ void QGeoMapReplyMapbox::networkReplyFinished()
     setFinished(true);
 }
 
+// A transfer timeout aborts with OperationCanceledError, which is retried like other network failures.
 void QGeoMapReplyMapbox::networkReplyError(QNetworkReply::NetworkError error)
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
     reply->deleteLater();
-
-    if (error == QNetworkReply::OperationCanceledError)
-    {
-        setFinished(true);
-        return;
-    }
 
     const int httpStatus = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     const QString errorMsg = QStringLiteral("HTTP %1: %2").arg(httpStatus).arg(reply->errorString());
