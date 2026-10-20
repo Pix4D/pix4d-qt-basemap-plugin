@@ -156,10 +156,15 @@ QGeoTiledMappingManagerEngineMapbox::QGeoTiledMappingManagerEngineMapbox(const Q
     }
 
     auto tileCache = new QGeoFileTileCacheMapbox(mapTypes, scaleFactor, enableLogging, cacheDirectory);
-    tileCache->setCostStrategyDisk(QGeoFileTileCache::Unitary);
+    // Disk holds 10,000-20,000 tiles. Memory holds compressed tiles and is the only cache for custom basemaps.
+    // Textures are decoded tiles of 1 MB each; with fewer, panning back decodes the same tiles again on the UI thread.
+    constexpr int MB = 1024 * 1024;
+    tileCache->setCostStrategyDisk(QGeoFileTileCache::ByteSize);
     tileCache->setCostStrategyMemory(QGeoFileTileCache::ByteSize);
     tileCache->setCostStrategyTexture(QGeoFileTileCache::ByteSize);
-    tileCache->setMaxDiskUsage(6000);
+    tileCache->setMaxDiskUsage(500 * MB);
+    tileCache->setMaxMemoryUsage(32 * MB);
+    tileCache->setExtraTextureUsage(256 * MB);
     setTileCache(tileCache);
 
     if (!customBasemapUrl.isEmpty())
