@@ -11,18 +11,23 @@
 
 QT_BEGIN_NAMESPACE
 
+class QGeoTileFetcherMapbox;
+
 class QGeoMapReplyMapbox : public QGeoTiledMapReply
 {
     Q_OBJECT
 
 public:
+    // The fetcher owns the reply. A non-null runningDownload is a still running download of the same tile, used
+    // instead of a new GET.
     explicit QGeoMapReplyMapbox(QNetworkAccessManager *networkManager,
                                 const QNetworkRequest &request,
                                 const QGeoTileSpec &spec,
                                 const QString &format,
                                 bool enableLogging,
-                                int maxRetries = 2,
-                                QObject *parent = nullptr);
+                                QGeoTileFetcherMapbox *fetcher,
+                                QNetworkReply *runningDownload = nullptr,
+                                int maxRetries = 2);
     ~QGeoMapReplyMapbox();
 
 private Q_SLOTS:
@@ -32,13 +37,19 @@ private Q_SLOTS:
 private:
     void startRequest();
     void connectReply(QNetworkReply *reply);
+    void handOverDownload();
     bool isRetriableError(int httpStatus) const;
+    // 500 ms before the first retry and 1 s before the second, plus up to half of that at random.
+    int retryDelayMs(QNetworkReply::NetworkError error);
 
+    QGeoTileFetcherMapbox *m_fetcher;
+    QPointer<QNetworkReply> m_networkReply;
     QPointer<QNetworkAccessManager> m_networkManager;
     QNetworkRequest m_request;
     QString m_format;
     bool m_enableLogging{false};
     int m_retriesLeft{0};
+    int m_retryCount{0};
 };
 
 QT_END_NAMESPACE

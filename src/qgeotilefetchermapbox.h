@@ -6,12 +6,16 @@
 
 #include <qlist.h>
 #include <QtLocation/private/qgeotilefetcher_p.h>
+#include <QtLocation/private/qgeotilespec_p.h>
+#include <QHash>
+#include <QPointer>
 #include <QUrlQuery>
 
 QT_BEGIN_NAMESPACE
 
 class QGeoTiledMappingManagerEngine;
 class QNetworkAccessManager;
+class QNetworkReply;
 
 class QGeoTileFetcherMapbox : public QGeoTileFetcher
 {
@@ -32,9 +36,14 @@ public:
     void setFormat(const QString &format);
     void setAdditionalParameters(const QVariantMap& parameters);
 
+    // Lets the download of a cancelled tile finish into the tile cache. Returns false if the caller must abort it.
+    bool adoptCancelledDownload(QNetworkReply *reply, const QGeoTileSpec &spec);
+
 private:
     QGeoTiledMapReply *getTileImage(const QGeoTileSpec &spec) override;
+    void cancelledDownloadFinished(QNetworkReply *reply, const QGeoTileSpec &spec);
 
+    QGeoTiledMappingManagerEngine *m_engine;
     QNetworkAccessManager *m_networkManager;
     QByteArray m_userAgent;
     QString m_format;
@@ -44,6 +53,7 @@ private:
     bool m_enableLogging{false};
     QString m_customBasemapUrl;
     QUrlQuery m_query;
+    QHash<QGeoTileSpec, QPointer<QNetworkReply>> m_cancelledDownloads;
 };
 
 QT_END_NAMESPACE
