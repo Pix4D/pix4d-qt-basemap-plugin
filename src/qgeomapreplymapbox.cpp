@@ -133,7 +133,8 @@ void QGeoMapReplyMapbox::networkReplyFinished()
     setFinished(true);
 }
 
-// A transfer timeout aborts with OperationCanceledError, which is retried like other network failures.
+// A transfer timeout aborts with OperationCanceledError (TimeoutError since Qt 6.11), which is retried like other
+// network failures.
 void QGeoMapReplyMapbox::networkReplyError(QNetworkReply::NetworkError error)
 {
     QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
